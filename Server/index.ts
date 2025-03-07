@@ -21,7 +21,7 @@ const DIRNAME = path.resolve();
 
 // CORS
 app.use(cors({
-    origin: ["https://global-feast.netlify.app"], 
+    origin: ["https://fusionflare.netlify.app"], 
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],

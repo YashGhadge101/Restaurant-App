@@ -4,7 +4,7 @@ import axios from "axios";
 import { LoginInputState, SignupInputState } from "@/Schema/userSchema";
 import { toast } from "sonner";
 
-const API_END_POINT = "https://global-feast.netlify.app";
+const API_END_POINT = "https://fusionflare.netlify.app/api/v1/user";
 axios.defaults.withCredentials = true;
 
 type User = {

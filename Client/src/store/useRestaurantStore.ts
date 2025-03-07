@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-const API_END_POINT = "https://global-feast.netlify.app/api/v1/restaurant";
+const API_END_POINT = "https://fusionflare.netlify.app/api/v1/restaurant";
 axios.defaults.withCredentials = true;
 
 export const useRestaurantStore = create<RestaurantState>()(
