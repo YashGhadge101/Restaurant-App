@@ -4,7 +4,7 @@ import axios from "axios";
 import { LoginInputState, SignupInputState } from "@/Schema/userSchema";
 import { toast } from "sonner";
 
-const API_END_POINT = "https://lively-zabaione-9b92aa.netlify.app";
+const API_END_POINT = "https://global-feast.netlify.app";
 axios.defaults.withCredentials = true;
 
 type User = {

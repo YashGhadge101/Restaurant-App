@@ -21,7 +21,7 @@ const DIRNAME = path.resolve();
 
 // CORS
 app.use(cors({
-    origin: ["https://lively-zabaione-9b92aa.netlify.app"], 
+    origin: ["https://global-feast.netlify.app"], 
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
