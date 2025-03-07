@@ -21,7 +21,7 @@ const DIRNAME = path.resolve();
 
 // CORS
 app.use(cors({
-    origin: ["https://FOOD_APP.onrender.com"], 
+    origin: ["https://lively-zabaione-9b92aa.netlify.app"], 
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
