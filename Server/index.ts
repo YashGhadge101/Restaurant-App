@@ -21,7 +21,7 @@ const DIRNAME = path.resolve();
 
 // CORS
 app.use(cors({
-    origin: ["https://fusionflare.netlify.app"], 
+    origin: ["https://food-app.render.com"], 
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
