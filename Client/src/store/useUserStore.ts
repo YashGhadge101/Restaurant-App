@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import axios from "axios";
-import { LoginInputState, SignupInputState } from "@/Schema/userSchema";
 import { toast } from "sonner";
+import { SignupInputState, LoginInputState } from "src/Schema/userSchema";
 
 const API_END_POINT = "https://food-app.render.com/api/v1/user";
 axios.defaults.withCredentials = true;

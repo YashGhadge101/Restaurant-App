@@ -1,7 +1,8 @@
-import { Orders } from "@/types/orderType";
-import { MenuItem, RestaurantState } from "@/types/restaurantType";
+
 import axios from "axios";
 import { toast } from "sonner";
+import { Orders } from "src/types/orderType";
+import { RestaurantState, MenuItem } from "src/types/restaurantType";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 

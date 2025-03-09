@@ -1,140 +1,145 @@
-import Login from "./Auth/Login"
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
-import ForgotPassword from './Auth/ForgotPassword.tsx'
-import ResetPassword from "./Auth/ResetPassword.tsx"
-import VerifyEmail from "./Auth/VerifyEmail.tsx"
-import HereSection from "./components/HereSection.tsx"
-import MainLayout from "./layout/Mainlayout.tsx"
-import Profile from "./components/Profile.tsx"
-import SearchPage from "./components/SearchPage.tsx"
-import RestaurantDetail from "./components/RestaurantDetail.tsx"
-import Cart from "./components/Cart.tsx"
-import Restaurant from "./Admin/Restaurant.tsx"
-import AddMenu from "./Admin/AddMenu.tsx"
-import Orders from "./Admin/Orders.tsx"
-import Success from "./components/Success.tsx"
-import { useUserStore } from "./store/useUserStore.ts"
-import { useEffect } from "react"
-import Loading from "./components/Loading.tsx"
-import Signup from "./Auth/Signup.tsx"
-import { useThemeStore } from "./store/useThemeStore.ts"
+import Success from "./components/Success";
+import { useUserStore } from "./store/useUserStore";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { useEffect } from "react";
+import Loading from "./components/Loading";
+import { useThemeStore } from "./store/useThemeStore";
+import MainLayout from "./layout/Mainlayout";
+import HereSection from "./components/HereSection";
+import Profile from "./components/Profile";
+import SearchPage from "./components/SearchPage";
+import RestaurantDetail from "./components/RestaurantDetail";
+import Cart from "./components/Cart";
+import Restaurant from "./Admin/Restaurant";
+import AddMenu from "./Admin/AddMenu";
+import Orders from "./Admin/Orders";
+import Login from "./Auth/Login";
+import Signup from "./Auth/Signup";
+import ForgotPassword from "./Auth/ForgotPassword";
+import ResetPassword from "./Auth/ResetPassword";
+import VerifyEmail from "./Auth/Signup";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated, user } = useUserStore();
+
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
 
-    if (!user?.isVerified) {
+    // Only redirect if user is verified but still logged in
+    if (isAuthenticated && !user?.isVerified) {
         return <Navigate to="/verify-email" replace />;
     }
+
     return children;
 };
+
 
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated, user } = useUserStore();
-    if (isAuthenticated && user?.isVerified) {
-        return <Navigate to="/" replace />
-    }
-    return children;
+  const { isAuthenticated, user } = useUserStore();
+  if(isAuthenticated && user?.isVerified){
+    return <Navigate to="/" replace/>
+  }
+  return children;
 };
 
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-    const { user, isAuthenticated } = useUserStore();
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />
-    }
-    if (!user?.admin) {
-        return <Navigate to="/" replace />
-    }
+const AdminRoute = ({children}:{children:React.ReactNode}) => {
+  const {user, isAuthenticated} = useUserStore();
+  if(!isAuthenticated){
+    return <Navigate to="/login" replace/>
+  }
+  if(!user?.admin){
+    return <Navigate to="/" replace/>
+  }
 
-    return children;
+  return children;
 }
 
 const appRouter = createBrowserRouter([
-    {
+  {
+    path: "/",
+    element: (
+      <ProtectedRoutes>
+        <MainLayout />
+      </ProtectedRoutes>
+    ),
+    children: [
+      {
         path: "/",
-        element: <ProtectedRoutes>
-            <MainLayout />
-        </ProtectedRoutes>,
-        children: [
-            {
-                path: "/",
-                element: <HereSection />
-            },
-            {
-                path: "/profile",
-                element: <Profile />,
-            },
-            {
-                path: "/search/:text",
-                element: <SearchPage />,
-            },
-            {
-                path: "/restaurant/:id",
-                element: <RestaurantDetail />,
-            },
-            {
-                path: "/cart",
-                element: <Cart />,
-            },
-            {
-                path: "/order/status",
-                element: <Success />,
-            },
-            // Admin services start from here
-            {
-                path: "/admin/restaurant",
-                element: <AdminRoute><Restaurant /></AdminRoute>,
-            },
-            {
-                path: "/admin/menu",
-                element: <AdminRoute><AddMenu /></AdminRoute>,
-            },
-            {
-                path: "/admin/orders",
-                element: <AdminRoute><Orders /></AdminRoute>,
-            },
-        ]
-    },
-    {
-        path: "/login",
-        element: <AuthenticatedUser><Login /></AuthenticatedUser>
-    },
-    {
-        path: "/signup",
-        element: <AuthenticatedUser><Signup /></AuthenticatedUser>
-    },
-    {
-        path: "/forgot-password",
-        element: <ForgotPassword />
-    },
-    {
-        path: "/reset-password",
-        element: <ResetPassword />
-    },
-    {
-        path: "/verify-email",
-        element: <VerifyEmail />,
-    },
-
-])
+        element: <HereSection />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
+      },
+      {
+        path: "/search/:text",
+        element: <SearchPage />,
+      },
+      {
+        path: "/restaurant/:id",
+        element: <RestaurantDetail />,
+      },
+      {
+        path: "/cart",
+        element: <Cart />,
+      },
+      {
+        path: "/order/status",
+        element: <Success />,
+      },
+      // admin services start from here
+      {
+        path: "/admin/restaurant",
+        element:<AdminRoute><Restaurant /></AdminRoute>,
+      },
+      {
+        path: "/admin/menu",
+        element:<AdminRoute><AddMenu /></AdminRoute>,
+      },
+      {
+        path: "/admin/orders",
+        element:<AdminRoute><Orders /></AdminRoute>,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element:<AuthenticatedUser><Login /></AuthenticatedUser>,
+  },
+  {
+    path: "/signup",
+    element:<AuthenticatedUser><Signup /></AuthenticatedUser> ,
+  },
+  {
+    path: "/forgot-password",
+    element: <AuthenticatedUser><ForgotPassword /></AuthenticatedUser>,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
+  },
+  {
+    path: "/verify-email",
+    element: <VerifyEmail />,
+  },
+]);
 
 function App() {
-    const initializeTheme = useThemeStore((state:any) => state.initializeTheme);
-    const {checkAuthentication, isCheckingAuth} = useUserStore();
-    // checking auth every time when page is loaded
-    useEffect(()=>{
-      checkAuthentication();
-      initializeTheme();
-    },[checkAuthentication])
-  
-    if(isCheckingAuth) return <Loading/>
-    return (
-      <main>
-        <RouterProvider router={appRouter}></RouterProvider>
-      </main>
-    );
-  }
-  
-  export default App;
+  const initializeTheme = useThemeStore((state:any) => state.initializeTheme);
+  const {checkAuthentication, isCheckingAuth} = useUserStore();
+  // checking auth every time when page is loaded
+  useEffect(()=>{
+    checkAuthentication();
+    initializeTheme();
+  },[checkAuthentication])
+
+  if(isCheckingAuth) return <Loading/>
+  return (
+    <main>
+      <RouterProvider router={appRouter}></RouterProvider>
+    </main>
+  );
+}
+
+export default App;

@@ -1,6 +1,6 @@
 
-import { CheckoutSessionRequest, OrderState } from "@/types/orderType";
 import axios from "axios";
+import { CheckoutSessionRequest, OrderState } from "src/types/orderType";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
