@@ -18,31 +18,25 @@ const PORT = process.env.PORT || 3000;
 
 const DIRNAME = path.resolve();
 
-
-// CORS
+// ✅ Corrected CORS Middleware
 app.use(cors({
-    origin: ["https://food-app.render.com"], 
+    origin: ["http://localhost:5173"],  // ✅ Fixed typo
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// Body parser & Cookie parser
+// ✅ Body parser & Cookie parser
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
+// ✅ Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/restaurant", restaurantRoute);
 app.use("/api/v1/menu", menuRoute);
 app.use("/api/v1/order", orderRoute);
-
-app.use(express.static(path.join(DIRNAME,"client/dist")));
-app.use("*",(_,res) => {
-    res.sendFile(path.resolve(DIRNAME,"client","dist","index.html"));
-})
 
 app.listen(PORT, async () => {
     await connectDB();

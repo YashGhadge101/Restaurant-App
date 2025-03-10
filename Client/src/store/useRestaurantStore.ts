@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import { toast } from "sonner";
 import { Orders } from "src/types/orderType";
@@ -6,7 +5,7 @@ import { RestaurantState, MenuItem } from "src/types/restaurantType";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-const API_END_POINT = "https://food-app.render.com/api/v1/restaurant";
+const API_END_POINT = "http://localhost:8000/api/v1/restaurant";
 axios.defaults.withCredentials = true;
 
 export const useRestaurantStore = create<RestaurantState>()(

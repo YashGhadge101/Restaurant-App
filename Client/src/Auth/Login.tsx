@@ -1,11 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { LoginInputState, userLoginSchema } from "@/Schema/userSchema";
-import { useUserStore } from "@/store/useUserStore";
+
+import { Separator } from "@radix-ui/react-separator";
 import { Loader2, LockKeyhole, Mail } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { LoginInputState, userLoginSchema } from "../Schema/userSchema";
+import { useUserStore } from "../store/useUserStore";
 
 const Login = () => {
   const [input, setInput] = useState<LoginInputState>({
@@ -101,7 +102,7 @@ const Login = () => {
         <Separator />
         <p className="mt-2">
           Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-500">
+          <Link to="/Signup" className="text-blue-500">
             Signup
           </Link>
         </p>

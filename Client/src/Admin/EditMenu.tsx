@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,12 +6,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { MenuFormSchema, menuSchema } from "@/Schema/menuSchema";
-import { useMenuStore } from "@/store/useMenuStore";
-import { MenuItem } from "@/types/restaurantType";
+} from "../components/ui/dialog";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { MenuFormSchema, menuSchema } from "../Schema/menuSchema";
+import { useMenuStore } from "../store/useMenuStore";
+import { MenuItem } from "../types/restaurantType";
 import { Loader2 } from "lucide-react";
 import {
   Dispatch,

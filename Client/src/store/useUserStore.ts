@@ -4,7 +4,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { SignupInputState, LoginInputState } from "src/Schema/userSchema";
 
-const API_END_POINT = "https://food-app.render.com/api/v1/user";
+const API_END_POINT = "http://localhost:8000/api/v1/user";
 axios.defaults.withCredentials = true;
 
 type User = {

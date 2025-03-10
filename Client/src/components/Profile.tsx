@@ -11,7 +11,7 @@ import { FormEvent, useRef, useState } from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { useUserStore } from "@/store/useUserStore";
+import { useUserStore } from "../store/useUserStore";
 
 const Profile = () => {
   const {user, updateProfile} = useUserStore();

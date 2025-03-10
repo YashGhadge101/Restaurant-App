@@ -1,6 +1,7 @@
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Success from "./components/Success";
 import { useUserStore } from "./store/useUserStore";
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Loading from "./components/Loading";
 import { useThemeStore } from "./store/useThemeStore";
@@ -14,26 +15,22 @@ import Restaurant from "./Admin/Restaurant";
 import AddMenu from "./Admin/AddMenu";
 import Orders from "./Admin/Orders";
 import Login from "./Auth/Login";
-import Signup from "./Auth/Signup";
 import ForgotPassword from "./Auth/ForgotPassword";
+import Signup from "./Auth/Signup";
 import ResetPassword from "./Auth/ResetPassword";
-import VerifyEmail from "./Auth/Signup";
+import VerifyEmail from "./Auth/VerifyEmail";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated, user } = useUserStore();
+  const { isAuthenticated, user } = useUserStore();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
-    // Only redirect if user is verified but still logged in
-    if (isAuthenticated && !user?.isVerified) {
-        return <Navigate to="/verify-email" replace />;
-    }
-
-    return children;
+  if (!user?.isVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
+  return children;
 };
-
 
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();

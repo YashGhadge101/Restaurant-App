@@ -7,7 +7,7 @@ import {
     sendResetSuccessEmail,
     sendVerificationEmail,
     sendWelcomeEmail
-} from "../mailtrap/email";
+} from "../MT/email";
 import { generateVerificationCode } from "../Utils/generateVerificationCode";
 import cloudinary from "../Utils/Cloudinary";
 import { generateToken } from "../Utils/generateToken";

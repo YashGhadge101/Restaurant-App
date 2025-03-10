@@ -1,4 +1,4 @@
-import { Label } from "@/components/ui/label";
+import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
@@ -6,8 +6,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useRestaurantStore } from "@/store/useRestaurantStore";
+} from "../components/ui/select";
+import { useRestaurantStore } from "../store/useRestaurantStore";
 import { useEffect } from "react";
 
 const Orders = () => {

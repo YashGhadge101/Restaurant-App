@@ -10,11 +10,11 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useUserStore } from "@/store/useUserStore";
-import { CheckoutSessionRequest } from "@/types/orderType";
-import { useCartStore } from "@/store/useCartStore";
-import { useRestaurantStore } from "@/store/useRestaurantStore";
-import { useOrderStore } from "@/store/useOrderStore";
+import { useUserStore } from "../store/useUserStore";
+import { CheckoutSessionRequest } from "../types/orderType";
+import { useCartStore } from "../store/useCartStore";
+import { useRestaurantStore } from "../store/useRestaurantStore";
+import { useOrderStore } from "../store/useOrderStore";
 import { Loader2 } from "lucide-react";
 
 const CheckoutConfirmPage = ({
@@ -45,7 +45,7 @@ const CheckoutConfirmPage = ({
     // api implementation start from here
     try {
       const checkoutData: CheckoutSessionRequest = {
-        cartItems: cart.map((cartItem) => ({
+        cartItems: cart.map((cartItem: { _id: any; name: any; image: any; price: { toString: () => any; }; quantity: { toString: () => any; }; }) => ({
           menuId: cartItem._id,
           name: cartItem.name,
           image: cartItem.image,

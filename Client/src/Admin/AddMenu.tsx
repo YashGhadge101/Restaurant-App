@@ -1,5 +1,5 @@
 
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,15 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "../components/ui/dialog";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import { Loader2, Plus } from "lucide-react";
 import React, { FormEvent, useState } from "react";
 import EditMenu from "./EditMenu";;
-import { useMenuStore } from "@/store/useMenuStore";
-import { useRestaurantStore } from "@/store/useRestaurantStore";
-import { MenuFormSchema, menuSchema } from "@/Schema/menuSchema";
+import { useMenuStore } from "../store/useMenuStore";
+import { useRestaurantStore } from "../store/useRestaurantStore";
+import { MenuFormSchema, menuSchema } from "../Schema/menuSchema";
  
 
 const AddMenu = () => {

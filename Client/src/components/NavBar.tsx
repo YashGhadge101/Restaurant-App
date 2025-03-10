@@ -37,9 +37,9 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Separator } from "./ui/separator";
-import { useUserStore } from "@/store/useUserStore";
-import { useCartStore } from "@/store/useCartStore";
-import { useThemeStore } from "@/store/useThemeStore";
+import { useUserStore } from "../store/useUserStore";
+import { useCartStore } from "../store/useCartStore";
+import { useThemeStore } from "../store/useThemeStore";
 
 const Navbar = () => {
   const { user, loading, logout } = useUserStore();
