@@ -19,29 +19,28 @@ export const useRestaurantStore = create<RestaurantState>()(
       restaurantOrder: [],
       createRestaurant: async (formData: FormData) => {
         try {
-          set({ loading: true });
+          set({ loading: true, restaurant: null });
+          localStorage.removeItem("restaurant-name");
           const response = await axios.post(`${API_END_POINT}/`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           });
 
-          if (response && response.data && response.data.success) {
+          if (response?.data?.success) {
             toast.success(response.data.message);
+            set({ restaurant: response.data.restaurant });
           } else {
             toast.error("Unexpected response from the server");
           }
         } catch (error: any) {
           console.error("❌ API Error:", error);
-          if (error.response) {
-            toast.error(error.response.data?.message || "Error occurred");
-          } else {
-            toast.error("Network error or server unreachable");
-          }
+          toast.error(error.response?.data?.message || "Error occurred");
         } finally {
           set({ loading: false });
         }
       },
+
       getRestaurant: async () => {
         try {
           set({ loading: true });
@@ -50,7 +49,7 @@ export const useRestaurantStore = create<RestaurantState>()(
             set({ loading: false, restaurant: response.data.restaurant });
           }
         } catch (error: any) {
-          if (error.response && error.response.status === 404) {
+          if (error.response?.status === 404) {
             set({ restaurant: null });
           }
           set({ loading: false });
@@ -66,13 +65,15 @@ export const useRestaurantStore = create<RestaurantState>()(
           });
           if (response.data.success) {
             toast.success(response.data.message);
-            set({ loading: false });
+            set({ restaurant: response.data.restaurant });
           }
         } catch (error: any) {
-          toast.error(error.response.data.message);
+          toast.error(error.response?.data?.message || "Error occurred");
+        } finally {
           set({ loading: false });
         }
       },
+
       searchRestaurant: async (
         searchText: string,
         searchQuery: string,
@@ -84,9 +85,11 @@ export const useRestaurantStore = create<RestaurantState>()(
           const params = new URLSearchParams();
           params.set("searchQuery", searchQuery);
           params.set("selectedCuisines", selectedCuisines.join(","));
+
           const response = await axios.get(
             `${API_END_POINT}/search/${searchText}?${params.toString()}`
           );
+
           if (response.data.success) {
             set({ loading: false, searchedRestaurant: response.data });
           }
@@ -94,17 +97,19 @@ export const useRestaurantStore = create<RestaurantState>()(
           set({ loading: false });
         }
       },
+
       addMenuToRestaurant: (menu: MenuItem) => {
-        set((state: any) => ({
+        set((state) => ({
           restaurant: state.restaurant
             ? { ...state.restaurant, menus: [...state.restaurant.menus, menu] }
             : null,
         }));
       },
+
       updateMenuToRestaurant: (updatedMenu: MenuItem) => {
-        set((state: any) => {
+        set((state) => {
           if (state.restaurant) {
-            const updatedMenuList = state.restaurant.menus.map((menu: any) =>
+            const updatedMenuList = state.restaurant.menus.map((menu) =>
               menu._id === updatedMenu._id ? updatedMenu : menu
             );
             return {
@@ -117,18 +122,22 @@ export const useRestaurantStore = create<RestaurantState>()(
           return state;
         });
       },
+
       setAppliedFilter: (value: string) => {
         set((state) => {
           const isAlreadyApplied = state.appliedFilter.includes(value);
           const updatedFilter = isAlreadyApplied
             ? state.appliedFilter.filter((item) => item !== value)
             : [...state.appliedFilter, value];
+
           return { appliedFilter: updatedFilter };
         });
       },
+
       resetAppliedFilter: () => {
         set({ appliedFilter: [] });
       },
+
       getSingleRestaurant: async (restaurantId: string) => {
         try {
           const response = await axios.get(`${API_END_POINT}/${restaurantId}`);
@@ -137,6 +146,7 @@ export const useRestaurantStore = create<RestaurantState>()(
           }
         } catch (error) {}
       },
+
       getRestaurantOrders: async () => {
         try {
           const response = await axios.get(`${API_END_POINT}/order`);
@@ -147,6 +157,7 @@ export const useRestaurantStore = create<RestaurantState>()(
           console.log(error);
         }
       },
+
       updateRestaurantOrder: async (orderId: string, status: string) => {
         try {
           const response = await axios.put(
@@ -168,7 +179,7 @@ export const useRestaurantStore = create<RestaurantState>()(
             toast.success(response.data.message);
           }
         } catch (error: any) {
-          toast.error(error.response.data.message);
+          toast.error(error.response?.data?.message || "Error occurred");
         }
       },
     }),

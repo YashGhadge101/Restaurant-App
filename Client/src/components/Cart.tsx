@@ -18,7 +18,7 @@ import { CartItem } from "../types/cartType";
 
 const Cart = () => {
   const [open, setOpen] = useState<boolean>(false);
-  const { cart, decrementQuantity, incrementQuantity } = useCartStore();
+  const { cart, decrementQuantity, incrementQuantity, removeFromTheCart } = useCartStore();
 
   let totalAmount = cart.reduce((acc: number, ele: { price: number; quantity: number; }) => {
     return acc + ele.price * ele.quantity;
@@ -53,7 +53,7 @@ const Cart = () => {
               <TableCell>
                 <div className="w-fit flex items-center rounded-full border border-gray-100 dark:border-gray-800 shadow-md">
                   <Button
-                  onClick={() => decrementQuantity(item._id)}
+                    onClick={() => decrementQuantity(item._id)}
                     size={"icon"}
                     variant={"outline"}
                     className="rounded-full bg-gray-200"
@@ -69,7 +69,7 @@ const Cart = () => {
                     {item.quantity}
                   </Button>
                   <Button
-                  onClick={() => incrementQuantity(item._id)}
+                    onClick={() => incrementQuantity(item._id)}
                     size={"icon"}
                     className="rounded-full bg-orange hover:bg-hoverOrange"
                     variant={"outline"}
@@ -80,7 +80,10 @@ const Cart = () => {
               </TableCell>
               <TableCell>{item.price * item.quantity}</TableCell>
               <TableCell className="text-right">
-                <Button size={"sm"} className="bg-orange hover:bg-hoverOrange">
+                <Button
+                  onClick={() => removeFromTheCart(item._id)}
+                  size={"sm"}
+                  className="bg-orange hover:bg-hoverOrange">
                   Remove
                 </Button>
               </TableCell>

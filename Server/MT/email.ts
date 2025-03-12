@@ -1,31 +1,28 @@
 import Nodemailer from "nodemailer";
-import { htmlContent, generateWelcomeEmailHtml, generatePasswordResetEmailHtml, generateResetSuccessEmailHtml } from "./htmlEmail";
 import dotenv from "dotenv";
+import { htmlContent, generateWelcomeEmailHtml, generatePasswordResetEmailHtml, generateResetSuccessEmailHtml } from "./htmlEmail";
 
 dotenv.config();
 
+// ✅ Configure Gmail SMTP
 const transporter = Nodemailer.createTransport({
-  host: "sandbox.smtp.mailtrap.io", 
-  port: 2525,  
-  secure: false,
-  auth: {
-    user: process.env.MAILTRAP_USER, 
-    pass: process.env.MAILTRAP_PASS
-  }
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_USER,  // ✅ Use your Gmail ID
+        pass: process.env.GMAIL_PASS,  // ✅ Use your App Password
+    },
 });
 
-export const sender = {
-  name: "Mailtrap Test",
-  address: "hello@demomailtrap.co",
-};
 
+
+// ✅ Send Verification Email
 export const sendVerificationEmail = async (email: string, verificationToken: string) => {
     try {
         await transporter.sendMail({
-            from: `"Mailtrap Test" <hello@demomailtrap.co>`,  // ✅ Fixed `from`
+            from: `"Your App Name" <${process.env.GMAIL_USER}>`,  // ✅ Gmail Sender
             to: email,  
-            subject: 'Verify your email',
-            html: htmlContent.replace("{verificationToken}", verificationToken),
+            subject: "Verify Your Email",
+            html: `<p>Your verification code is: <strong>${verificationToken}</strong></p>`,
         });
         console.log("✅ Verification email sent successfully!");
     } catch (error) {
@@ -34,13 +31,14 @@ export const sendVerificationEmail = async (email: string, verificationToken: st
     }
 };
 
+// ✅ Send Welcome Email
 export const sendWelcomeEmail = async (email: string, name: string) => {
     const htmlContent = generateWelcomeEmailHtml(name);
     try {
         await transporter.sendMail({
-            from: `"Mailtrap Test" <hello@demomailtrap.co>`,
+            from: `"Your App Name" <${process.env.GMAIL_USER}>`,
             to: email,
-            subject: 'Welcome to PatelEats',
+            subject: "Welcome to PatelEats",
             html: htmlContent,
         });
         console.log("✅ Welcome email sent successfully!");
@@ -50,13 +48,14 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
     }
 };
 
+// ✅ Send Password Reset Email
 export const sendPasswordResetEmail = async (email: string, resetURL: string) => {
     const htmlContent = generatePasswordResetEmailHtml(resetURL);
     try {
         await transporter.sendMail({
-            from: `"Mailtrap Test" <hello@demomailtrap.co>`,
+            from: `"Your App Name" <${process.env.GMAIL_USER}>`,
             to: email,
-            subject: 'Reset your password',
+            subject: "Reset Your Password",
             html: htmlContent,
         });
         console.log("✅ Password reset email sent successfully!");
@@ -66,13 +65,14 @@ export const sendPasswordResetEmail = async (email: string, resetURL: string) =>
     }
 };
 
+// ✅ Send Password Reset Success Email
 export const sendResetSuccessEmail = async (email: string) => {
     const htmlContent = generateResetSuccessEmailHtml();
     try {
         await transporter.sendMail({
-            from: `"Mailtrap Test" <hello@demomailtrap.co>`,
+            from: `"Your App Name" <${process.env.GMAIL_USER}>`,
             to: email,
-            subject: 'Password Reset Successfully',
+            subject: "Password Reset Successfully",
             html: htmlContent,
         });
         console.log("✅ Password reset success email sent!");

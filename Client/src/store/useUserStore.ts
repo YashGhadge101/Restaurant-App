@@ -152,11 +152,14 @@ export const useUserStore = create<UserState>()(
                             'Content-Type':'application/json'
                         }
                     });
+                    console.log("Profile Data Sent:", input);
+
                     if(response.data.success){
                         toast.success(response.data.message);
                         set({user:response.data.user, isAuthenticated:true});
                     }
                 } catch (error:any) { 
+                    console.error("Error Response:", error.response?.data || error.message);
                     toast.error(error.response.data.message || "Internal Server Error");
                 }
             }
