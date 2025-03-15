@@ -45,7 +45,7 @@ const CheckoutConfirmPage = ({
     // api implementation start from here
     try {
       const checkoutData: CheckoutSessionRequest = {
-        cartItems: cart.map((cartItem: { _id: any; name: any; image: any; price: { toString: () => any; }; quantity: { toString: () => any; }; }) => ({
+        cartItems: cart.map((cartItem) => ({
           menuId: cartItem._id,
           name: cartItem.name,
           image: cartItem.image,
