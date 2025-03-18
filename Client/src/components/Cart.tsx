@@ -1,16 +1,7 @@
-
 import { Minus, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "./ui/table";
 import { useState } from "react";
 import CheckoutConfirmPage from "./CheckoutConfirmPage";
 import { useCartStore } from "../store/useCartStore";
@@ -56,24 +47,21 @@ const Cart = () => {
                     onClick={() => decrementQuantity(item._id)}
                     size={"icon"}
                     variant={"outline"}
-                    className="rounded-full bg-gray-200"
-                  >
+                    className="rounded-full bg-gray-200">
                     <Minus />
                   </Button>
                   <Button
                     size={"icon"}
                     className="font-bold border-none"
                     disabled
-                    variant={"outline"}
-                  >
+                    variant={"outline"}>
                     {item.quantity}
                   </Button>
                   <Button
                     onClick={() => incrementQuantity(item._id)}
                     size={"icon"}
                     className="rounded-full bg-orange hover:bg-hoverOrange"
-                    variant={"outline"}
-                  >
+                    variant={"outline"}>
                     <Plus />
                   </Button>
                 </div>
@@ -100,8 +88,7 @@ const Cart = () => {
       <div className="flex justify-end my-5">
         <Button
           onClick={() => setOpen(true)}
-          className="bg-orange hover:bg-hoverOrange"
-        >
+          className="bg-orange hover:bg-hoverOrange">
           Proceed To Checkout
         </Button>
       </div>

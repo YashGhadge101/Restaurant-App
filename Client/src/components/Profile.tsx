@@ -1,11 +1,4 @@
-import {
-  Loader2,
-  LocateIcon,
-  Mail,
-  MapPin ,
-  MapPinnedIcon,
-  Plus,
-} from "lucide-react";
+import { Loader2, LocateIcon, Mail, MapPin , MapPinnedIcon, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { FormEvent, useRef, useState } from "react";
 import { Input } from "./ui/input";

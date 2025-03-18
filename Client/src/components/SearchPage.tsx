@@ -43,8 +43,7 @@ const SearchPage = () => {
               onClick={() =>
                 searchRestaurant(params.text!, searchQuery, appliedFilter)
               }
-              className="bg-orange hover:bg-hoverOrange"
-            >
+              className="bg-orange hover:bg-hoverOrange" >
               Search
             </Button>
           </div>
@@ -59,22 +58,18 @@ const SearchPage = () => {
                   (selectedFilter: string, idx: number) => (
                     <div
                       key={idx}
-                      className="relative inline-flex items-center max-w-full"
-                    >
+                      className="relative inline-flex items-center max-w-full" >
                       <Badge
                         className="text-[#D19254] rounded-md hover:cursor-pointer pr-6 whitespace-nowrap"
-                        variant="outline"
-                      >
+                        variant="outline" >
                         {selectedFilter}
                       </Badge>
                       <X
                         onClick={() => setAppliedFilter(selectedFilter)}
                         size={16}
-                        className="absolute text-[#D19254] right-1 hover:cursor-pointer"
-                      />
+                        className="absolute text-[#D19254] right-1 hover:cursor-pointer"/>
                     </div>
-                  )
-                )}
+                  ) )}
               </div>
             </div>
             {/* Restaurant Cards  */}
@@ -94,8 +89,7 @@ const SearchPage = () => {
                         <img
                           src={restaurant.imageUrl}
                           alt=""
-                          className="w-full h-full object-cover"
-                        />
+                          className="w-full h-full object-cover"/>
                       </AspectRatio>
                       <div className="absolute top-2 left-2 bg-white dark:bg-gray-700 bg-opacity-75 rounded-lg px-3 py-1">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -128,12 +122,10 @@ const SearchPage = () => {
                           (cuisine: string, idx: number) => (
                             <Badge
                               key={idx}
-                              className="font-medium px-2 py-1 rounded-full shadow-sm"
-                            >
+                              className="font-medium px-2 py-1 rounded-full shadow-sm" >
                               {cuisine}
                             </Badge>
-                          )
-                        )}
+                          ))}
                       </div>
                     </CardContent>
                     <CardFooter className="p-4 border-t dark:border-t-gray-700 border-t-gray-100 text-white flex justify-end">
@@ -144,8 +136,7 @@ const SearchPage = () => {
                       </Link>
                     </CardFooter>
                   </Card>
-                ))
-              )}
+                )))}
             </div>
           </div>
         </div>

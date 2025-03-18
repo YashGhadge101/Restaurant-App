@@ -31,8 +31,7 @@ const AvailableMenu = ({ menus }: { menus: MenuItem[] }) => {
                   addToCart(menu);
                   navigate("/cart");
                 }}
-                className="w-full bg-orange hover:bg-hoverOrange"
-              >
+                className="w-full bg-orange hover:bg-hoverOrange">
                 Add to Cart
               </Button>
             </CardFooter>
