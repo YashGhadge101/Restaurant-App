@@ -4,52 +4,47 @@ import uploadImageOnCloudinary from "../Utils/imageUpload";
 import { Order } from "../models/order.model";
 import { AuthenticatedRequest } from "../middlewares/isAuthenticated";
 
-export const createRestaurant = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const createRestaurant = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { restaurantName, city, country, deliveryTime, cuisines } = req.body;
-    const file = req.file;
+      const { restaurantName, city, country, deliveryTime, cuisines } = req.body;
+      const file = req.file;
 
-    if (!req.id) {
-      res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
-      return;
-    }
+      const restaurant = await Restaurant.findOne({ user: req.id });
+      if (restaurant) {
+          res.status(400).json({
+              success: false,
+              message: "Restaurant already exists for this user"
+          });
+          return;
+      }
 
-    const existingRestaurant = await Restaurant.findOne({ user: req.id });
-    if (existingRestaurant) {
-      res.status(400).json({ success: false, message: "Restaurant already exists for this user" });
-      return;
-    }
+      if (!file) {
+          res.status(400).json({
+              success: false,
+              message: "Image is required"
+          });
+          return;
+      }
 
-    if (!file) {
-      res.status(400).json({ success: false, message: "Image is required" });
-      return;
-    }
+      const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
 
-    const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File).catch(() => null);
-    if (!imageUrl) {
-      res.status(500).json({ success: false, message: "Image upload failed" });
-      return;
-    }
+      await Restaurant.create({
+          user: req.id,
+          restaurantName,
+          city,
+          country,
+          deliveryTime,
+          cuisines: JSON.parse(cuisines),
+          imageUrl
+      });
 
-    const parsedCuisines = Array.isArray(cuisines) ? cuisines : JSON.parse(cuisines || "[]");
-
-    await Restaurant.create({
-      user: req.id,
-      restaurantName,
-      city,
-      country,
-      deliveryTime,
-      cuisines: parsedCuisines,
-      imageUrl
-    });
-
-    res.status(201).json({ success: true, message: "Restaurant Added Successfully" });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message || "Internal server error" });
+      res.status(201).json({
+          success: true,
+          message: "Restaurant Added"
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
   }
 };
 

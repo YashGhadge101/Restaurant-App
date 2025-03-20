@@ -16,28 +16,24 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DIRNAME = path.resolve();
 
-// ✅ Default middleware setup
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Updated CORS configuration
 const corsOptions = {
-    origin: ["http://localhost:5173", "http://localhost:3000"], // ✅ Allow frontend origin
-    credentials: true, // ✅ Allow cookies/auth headers
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // ✅ Allow common HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow required headers
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true, 
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"], 
 };
 app.use(cors(corsOptions));
 
-// ✅ API Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/restaurant", restaurantRoute);
 app.use("/api/v1/menu", menuRoute);
 app.use("/api/v1/order", orderRoute);
 
-// ✅ Start the server
 app.listen(PORT, () => {
     connectDB();
     console.log(`🚀 Server running on http://localhost:${PORT}`);
