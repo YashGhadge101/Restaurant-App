@@ -69,12 +69,13 @@ const AddMenu = () => {
           Available Menus
         </h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger>
+          {/* Hover effect on the button that opens the dialog */}
+          <DialogTrigger className="transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
             <Button className="bg-orange hover:bg-hoverOrange">
               <Plus className="mr-2" /> Add Menus
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="rounded-lg">
             <DialogHeader>
               <DialogTitle>Add A New Menu</DialogTitle>
               <DialogDescription>
@@ -145,7 +146,8 @@ const AddMenu = () => {
                   </span>
                 )}
               </div>
-              <DialogFooter className="mt-5">
+              {/* Hover effect on the footer buttons */}
+              <DialogFooter className="mt-5 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
                 {loading ? (
                   <Button disabled className="bg-orange hover:bg-hoverOrange">
                     <Loader2 className="mr-2 w-4 h-4 animate-spin" /> Please wait
@@ -184,7 +186,7 @@ const AddMenu = () => {
                 setEditOpen(true);
               }}
               size="sm"
-              className="bg-orange hover:bg-hoverOrange mt-2"
+              className="bg-orange hover:bg-hoverOrange transition-all duration-300 transform hover:scale-105 hover:shadow-lg mt-2"
             >
               Edit
             </Button>

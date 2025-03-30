@@ -13,13 +13,7 @@ import { MenuFormSchema, menuSchema } from "../Schema/menuSchema";
 import { useMenuStore } from "../store/useMenuStore";
 import { MenuItem } from "../types/restaurantType";
 import { Loader2 } from "lucide-react";
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 
 const EditMenu = ({
   selectedMenu,
@@ -37,7 +31,7 @@ const EditMenu = ({
     image: undefined,
   });
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
-  const {loading, editMenu} = useMenuStore();
+  const { loading, editMenu } = useMenuStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -48,34 +42,40 @@ const EditMenu = ({
     e.preventDefault();
     const result = menuSchema.safeParse(input);
     if (!result.success) {
-      const fieldErrors = result.error.formErrors.fieldErrors;
-      setError(fieldErrors as Partial<MenuFormSchema>);
+      setError(result.error.formErrors.fieldErrors as Partial<MenuFormSchema>);
       return;
     }
-     
-    // api ka kaam start from here
+
     try {
       const formData = new FormData();
       formData.append("name", input.name);
       formData.append("description", input.description);
       formData.append("price", input.price.toString());
-      if(input.image){
+      if (input.image) {
         formData.append("image", input.image);
       }
+
       await editMenu(selectedMenu._id, formData);
+
+      // Reset error state and close modal
+      setError({});
+      setEditOpen(false);
     } catch (error) {
-      console.log(error);
+      console.error("Error updating menu:", error);
     }
   };
 
-  useEffect(() => { 
-    setInput({
-      name: selectedMenu?.name || "",
-      description: selectedMenu?.description || "",
-      price: selectedMenu?.price || 0,
-      image: undefined,
-    });
+  useEffect(() => {
+    if (selectedMenu) {
+      setInput({
+        name: selectedMenu.name || "",
+        description: selectedMenu.description || "",
+        price: selectedMenu.price || 0,
+        image: undefined,
+      });
+    }
   }, [selectedMenu]);
+
   return (
     <Dialog open={editOpen} onOpenChange={setEditOpen}>
       <DialogContent>
@@ -95,7 +95,9 @@ const EditMenu = ({
               onChange={changeEventHandler}
               placeholder="Enter menu name"
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.name}</span>}
+            {error.name && (
+              <span className="text-xs font-medium text-red-600">{error.name}</span>
+            )}
           </div>
           <div>
             <Label>Description</Label>
@@ -106,7 +108,9 @@ const EditMenu = ({
               onChange={changeEventHandler}
               placeholder="Enter menu description"
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.description}</span>}
+            {error.description && (
+              <span className="text-xs font-medium text-red-600">{error.description}</span>
+            )}
           </div>
           <div>
             <Label>Price in (Rupees)</Label>
@@ -117,18 +121,20 @@ const EditMenu = ({
               onChange={changeEventHandler}
               placeholder="Enter menu price"
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.price}</span>}
+            {error.price && (
+              <span className="text-xs font-medium text-red-600">{error.price}</span>
+            )}
           </div>
           <div>
             <Label>Upload Menu Image</Label>
             <Input
               type="file"
               name="image"
-              onChange={(e) =>
-                setInput({ ...input, image: e.target.files?.[0] || undefined })
-              }
+              onChange={(e) => setInput({ ...input, image: e.target.files?.[0] || undefined })}
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.image?.name}</span>}
+            {error.image && (
+              <span className="text-xs font-medium text-red-600">{error.image?.name}</span>
+            )}
           </div>
           <DialogFooter className="mt-5">
             {loading ? (
@@ -137,7 +143,9 @@ const EditMenu = ({
                 Please wait
               </Button>
             ) : (
-              <Button className="bg-orange hover:bg-hoverOrange">Submit</Button>
+              <Button type="submit" className="bg-orange hover:bg-hoverOrange">
+                Submit
+              </Button>
             )}
           </DialogFooter>
         </form>

@@ -22,7 +22,7 @@ type User = {
 type UserState = {
     user: User | null;
     isAuthenticated: boolean;
-    isCheckingAuth: boolean;  // Fixed: Added this property
+    isCheckingAuth: boolean;
     loading: boolean;
     signup: (input: SignupInputState) => Promise<void>;
     login: (input: LoginInputState) => Promise<void>;
@@ -31,7 +31,7 @@ type UserState = {
     logout: () => Promise<void>;
     forgotPassword: (email: string) => Promise<void>;
     resetPassword: (token: string, newPassword: string) => Promise<void>;
-    updateProfile: (input: any) => Promise<void>;
+    updateProfile: (input: Partial<User>) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>()(
@@ -39,130 +39,139 @@ export const useUserStore = create<UserState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
-            isCheckingAuth: false, // Fixed: Initialize isCheckingAuth
+            isCheckingAuth: false,
             loading: false,
 
-            // Signup API implementation
+            // ✅ Signup API
             signup: async (input: SignupInputState) => {
                 try {
                     set({ loading: true });
-                    const response = await axios.post(`${API_END_POINT}/signup`, input, {
+                    const { data } = await axios.post(`${API_END_POINT}/signup`, input, {
                         headers: { "Content-Type": "application/json" },
                     });
-                    if (response.data.success) {
-                        toast.success(response.data.message);
-                        set({ loading: false, user: response.data.user, isAuthenticated: true });
+                    if (data.success) {
+                        toast.success(data.message);
+                        set({ user: data.user, isAuthenticated: true });
                     }
                 } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Signup failed.");
+                } finally {
                     set({ loading: false });
-                    toast.error(error.response?.data?.message);
                 }
             },
 
+            // ✅ Login API
             login: async (input: LoginInputState) => {
                 try {
                     set({ loading: true });
-                    const response = await axios.post(`${API_END_POINT}/login`, input, {
+                    const { data } = await axios.post(`${API_END_POINT}/login`, input, {
                         headers: { "Content-Type": "application/json" },
                     });
-                    if (response.data.success) {
-                        toast.success(response.data.message);
-                        set({ loading: false, user: response.data.user, isAuthenticated: true });
+                    if (data.success) {
+                        toast.success(data.message);
+                        set({ user: data.user, isAuthenticated: true });
                     }
                 } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Login failed.");
+                } finally {
                     set({ loading: false });
-                    toast.error(error.response?.data?.message || "Something went wrong");
                 }
             },
 
+            // ✅ Verify Email API
             verifyEmail: async (verificationCode: string) => {
                 try {
                     set({ loading: true });
-                    const response = await axios.post(`${API_END_POINT}/verify-email`, { verificationCode }, {
+                    const { data } = await axios.post(`${API_END_POINT}/verify-email`, { verificationCode }, {
                         headers: { "Content-Type": "application/json" },
                     });
-                    if (response.data.success) {
-                        toast.success(response.data.message);
-                        set({ loading: false, user: response.data.user, isAuthenticated: true });
+                    if (data.success) {
+                        toast.success(data.message);
+                        set({ user: data.user, isAuthenticated: true });
                     }
                 } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Email verification failed.");
+                } finally {
                     set({ loading: false });
-                    toast.error(error.response?.data?.message || "Something went wrong");
                 }
             },
 
+            // ✅ Check Authentication API
             checkAuthentication: async () => {
                 try {
                     set({ isCheckingAuth: true });
-                    const response = await axios.get(`${API_END_POINT}/check-auth`);
-                    if (response.data.success) {
-                        set({ user: response.data.user, isAuthenticated: true, isCheckingAuth: false });
+                    const { data } = await axios.get(`${API_END_POINT}/check-auth`);
+                    if (data.success) {
+                        set({ user: data.user, isAuthenticated: true });
                     }
-                } catch (error) {
-                    set({ isAuthenticated: false, isCheckingAuth: false });
+                } catch {
+                    set({ isAuthenticated: false });
+                } finally {
+                    set({ isCheckingAuth: false });
                 }
             },
 
+            // ✅ Logout API
             logout: async () => {
                 try {
                     set({ loading: true });
-                    const response = await axios.post(`${API_END_POINT}/logout`);
-                    if (response.data.success) {
-                        toast.success(response.data.message);
-                        set({ loading: false, user: null, isAuthenticated: false });
+                    const { data } = await axios.post(`${API_END_POINT}/logout`);
+                    if (data.success) {
+                        toast.success(data.message);
+                        set({ user: null, isAuthenticated: false });
                     }
                 } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Logout failed.");
+                } finally {
                     set({ loading: false });
-                    toast.error(error.response?.data?.message || "Something went wrong");
                 }
             },
 
+            // ✅ Forgot Password API
             forgotPassword: async (email: string) => {
                 try {
                     set({ loading: true });
-                    const response = await axios.post(`${API_END_POINT}/forgot-password`, { email });
-                    if (response.data.success) {
-                        toast.success(response.data.message);
-                        set({ loading: false });
+                    const { data } = await axios.post(`${API_END_POINT}/forgot-password`, { email });
+                    if (data.success) {
+                        toast.success(data.message);
                     }
                 } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Password reset request failed.");
+                } finally {
                     set({ loading: false });
-                    toast.error(error.response?.data?.message || "Something went wrong");
                 }
             },
 
+            // ✅ Reset Password API
             resetPassword: async (token: string, newPassword: string) => {
                 try {
                     set({ loading: true });
-                    const response = await axios.post(`${API_END_POINT}/reset-password/${token}`, { newPassword });
-                    if (response.data.success) {
-                        toast.success(response.data.message);
-                        set({ loading: false });
+                    const { data } = await axios.post(`${API_END_POINT}/reset-password/${token}`, { newPassword });
+                    if (data.success) {
+                        toast.success(data.message);
                     }
                 } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Password reset failed.");
+                } finally {
                     set({ loading: false });
-                    toast.error(error.response?.data?.message || "Something went wrong");
                 }
             },
 
-            updateProfile: async (input:any) => {
-                try { 
-                    const response = await axios.put(`${API_END_POINT}/profile/update`, input,{
-                        headers:{
-                            'Content-Type':'application/json'
-                        }
+            // ✅ Update Profile API
+            updateProfile: async (input: Partial<User>) => {
+                try {
+                    const { data } = await axios.put(`${API_END_POINT}/profile/update`, input, {
+                        headers: { "Content-Type": "application/json" },
                     });
-                    console.log("Profile Data Sent:", input);
 
-                    if(response.data.success){
-                        toast.success(response.data.message);
-                        set({user:response.data.user, isAuthenticated:true});
+                    if (data.success) {
+                        toast.success(data.message);
+                        set({ user: data.user });
                     }
-                } catch (error:any) { 
-                    console.error("Error Response:", error.response?.data || error.message);
-                    toast.error(error.response.data.message || "Internal Server Error");
+                } catch (error: any) {
+                    toast.error(error.response?.data?.message || "Profile update failed.");
                 }
-            }
+            },
         }),
         {
             name: "user-store",

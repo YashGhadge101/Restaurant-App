@@ -28,21 +28,21 @@ export const useMenuStore = create<MenuState>()(
       createMenu: async (formData: FormData) => {
         try {
           set({ loading: true }); // Start loading
-          const response = await axios.post(`${API_END_POINT}/`, formData, {
+          const { data } = await axios.post(`${API_END_POINT}/`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           });
 
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({ loading: false, menu: response.data.menu }); // ✅ Stop loading
-            useRestaurantStore.getState().addMenuToRestaurant(response.data.menu);
+          if (data.success) {
+            toast.success(data.message);
+            set({ menu: data.menu }); // ✅ Update menu state
+            useRestaurantStore.getState().addMenuToRestaurant(data.menu);
           }
         } catch (error: any) {
           toast.error(error.response?.data?.message || "Something went wrong");
         } finally {
-          set({ loading: false }); // ✅ Ensure loading is stopped in all cases
+          set({ loading: false }); // ✅ Ensure loading stops
         }
       },
 
@@ -50,16 +50,16 @@ export const useMenuStore = create<MenuState>()(
       editMenu: async (menuId: string, formData: FormData) => {
         try {
           set({ loading: true }); // Start loading
-          const response = await axios.put(`${API_END_POINT}/${menuId}`, formData, {
+          const { data } = await axios.put(`${API_END_POINT}/${menuId}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           });
 
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({ loading: false, menu: response.data.menu }); // ✅ Stop loading
-            useRestaurantStore.getState().updateMenuToRestaurant(response.data.menu);
+          if (data.success) {
+            toast.success(data.message);
+            set({ menu: data.menu }); // ✅ Update menu state
+            useRestaurantStore.getState().updateMenuToRestaurant(data.menu);
           }
         } catch (error: any) {
           toast.error(error.response?.data?.message || "Something went wrong");

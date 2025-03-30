@@ -1,7 +1,15 @@
 import { Minus, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "./ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
 import { useState } from "react";
 import CheckoutConfirmPage from "./CheckoutConfirmPage";
 import { useCartStore } from "../store/useCartStore";
@@ -9,19 +17,27 @@ import { CartItem } from "../types/cartType";
 
 const Cart = () => {
   const [open, setOpen] = useState<boolean>(false);
-  const { cart, decrementQuantity, incrementQuantity, removeFromTheCart } = useCartStore();
+  const { cart, decrementQuantity, incrementQuantity, removeFromTheCart, clearCart } =
+    useCartStore();
 
-  let totalAmount = cart.reduce((acc: number, ele: { price: number; quantity: number; }) => {
-    return acc + ele.price * ele.quantity;
-  }, 0);
+  const totalAmount = cart
+    .reduce((acc: number, item: CartItem) => acc + item.price * item.quantity, 0)
+    .toFixed(2);
+
   return (
     <div className="flex flex-col max-w-7xl mx-auto my-10">
       <div className="flex justify-end">
-        <Button variant="link">Clear All</Button>
+        <Button
+          onClick={clearCart}
+          className="text-red-500 hover:text-red-600 transition-all duration-300"
+        >
+          Clear All
+        </Button>
       </div>
+
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-gray-200 dark:bg-gray-700">
             <TableHead>Items</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Price</TableHead>
@@ -32,46 +48,46 @@ const Cart = () => {
         </TableHeader>
         <TableBody>
           {cart.map((item: CartItem) => (
-            <TableRow>
+            <TableRow
+              key={item._id}
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+            >
               <TableCell>
                 <Avatar>
-                  <AvatarImage src={item.image} alt="" />
+                  <AvatarImage src={item.image} alt={item.name} />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
               </TableCell>
-              <TableCell> {item.name}</TableCell>
-              <TableCell> {item.price}</TableCell>
+              <TableCell>{item.name}</TableCell>
+              <TableCell>₹{item.price.toFixed(2)}</TableCell>
               <TableCell>
-                <div className="w-fit flex items-center rounded-full border border-gray-100 dark:border-gray-800 shadow-md">
+                <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-2">
                   <Button
                     onClick={() => decrementQuantity(item._id)}
-                    size={"icon"}
-                    variant={"outline"}
-                    className="rounded-full bg-gray-200">
+                    size="icon"
+                    variant="outline"
+                    className="rounded-full bg-gray-200 hover:scale-110 transition-all duration-300"
+                  >
                     <Minus />
                   </Button>
-                  <Button
-                    size={"icon"}
-                    className="font-bold border-none"
-                    disabled
-                    variant={"outline"}>
-                    {item.quantity}
-                  </Button>
+                  <span className="font-bold">{item.quantity}</span>
                   <Button
                     onClick={() => incrementQuantity(item._id)}
-                    size={"icon"}
-                    className="rounded-full bg-orange hover:bg-hoverOrange"
-                    variant={"outline"}>
+                    size="icon"
+                    className="rounded-full bg-orange hover:bg-hoverOrange hover:scale-110 transition-all duration-300"
+                    variant="outline"
+                  >
                     <Plus />
                   </Button>
                 </div>
               </TableCell>
-              <TableCell>{item.price * item.quantity}</TableCell>
+              <TableCell>₹{(item.price * item.quantity).toFixed(2)}</TableCell>
               <TableCell className="text-right">
                 <Button
                   onClick={() => removeFromTheCart(item._id)}
-                  size={"sm"}
-                  className="bg-orange hover:bg-hoverOrange">
+                  size="sm"
+                  className="bg-orange hover:bg-hoverOrange transition-all duration-300 hover:scale-105"
+                >
                   Remove
                 </Button>
               </TableCell>
@@ -81,17 +97,20 @@ const Cart = () => {
         <TableFooter>
           <TableRow className="text-2xl font-bold">
             <TableCell colSpan={5}>Total</TableCell>
-            <TableCell className="text-right">{totalAmount}</TableCell>
+            <TableCell className="text-right">₹{totalAmount}</TableCell>
           </TableRow>
         </TableFooter>
       </Table>
+
       <div className="flex justify-end my-5">
         <Button
           onClick={() => setOpen(true)}
-          className="bg-orange hover:bg-hoverOrange">
+          className="bg-orange hover:bg-hoverOrange transition-all duration-300 hover:scale-105"
+        >
           Proceed To Checkout
         </Button>
       </div>
+
       <CheckoutConfirmPage open={open} setOpen={setOpen} />
     </div>
   );
