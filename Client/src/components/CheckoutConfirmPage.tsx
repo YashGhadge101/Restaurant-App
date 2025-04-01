@@ -27,27 +27,21 @@ const CheckoutConfirmPage = ({
   const [input, setInput] = useState({
     name: user?.fullname || "",
     email: user?.email || "",
-    contact: String(user?.contact || ""), // Ensure string conversion safely
+    contact: user?.contact.toString() || "",
     address: user?.address || "",
     city: user?.city || "",
     country: user?.country || "",
   });
-
   const { cart } = useCartStore();
   const { restaurant } = useRestaurantStore();
   const { createCheckoutSession, loading } = useOrderStore();
-
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInput((prev) => ({ ...prev, [name]: value }));
+    setInput({ ...input, [name]: value });
   };
-
   const checkoutHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!restaurant?._id) {
-      console.error("Restaurant ID is missing!");
-      return;
-    }
+    // api implementation start from here
     try {
       const checkoutData: CheckoutSessionRequest = {
         cartItems: cart.map((cartItem) => ({
@@ -58,11 +52,11 @@ const CheckoutConfirmPage = ({
           quantity: cartItem.quantity.toString(),
         })),
         deliveryDetails: input,
-        restaurantId: restaurant._id,
+        restaurantId: restaurant?._id as string,
       };
       await createCheckoutSession(checkoutData);
     } catch (error) {
-      console.error("Checkout error:", error);
+      console.log(error);
     }
   };
 
@@ -72,14 +66,14 @@ const CheckoutConfirmPage = ({
         <DialogTitle className="font-semibold">Review Your Order</DialogTitle>
         <DialogDescription className="text-xs">
           Double-check your delivery details and ensure everything is in order.
-          When you are ready, hit confirm to finalize your order.
+          When you are ready, hit confirm button to finalize your order
         </DialogDescription>
         <form
           onSubmit={checkoutHandler}
           className="md:grid grid-cols-2 gap-2 space-y-1 md:space-y-0"
         >
           <div>
-            <Label>Full Name</Label>
+            <Label>Fullname</Label>
             <Input
               type="text"
               name="name"
@@ -89,7 +83,13 @@ const CheckoutConfirmPage = ({
           </div>
           <div>
             <Label>Email</Label>
-            <Input type="email" name="email" value={input.email} disabled />
+            <Input
+              disabled
+              type="email"
+              name="email"
+              value={input.email}
+              onChange={changeEventHandler}
+            />
           </div>
           <div>
             <Label>Contact</Label>
@@ -134,10 +134,7 @@ const CheckoutConfirmPage = ({
                 Please wait
               </Button>
             ) : (
-              <Button
-                type="submit"
-                className="bg-orange hover:bg-hoverOrange transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-              >
+              <Button className="bg-orange hover:bg-hoverOrange">
                 Continue To Payment
               </Button>
             )}

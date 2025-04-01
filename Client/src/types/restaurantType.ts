@@ -1,4 +1,4 @@
-
+// In your restaurantType.ts file
 import { Orders } from "./orderType";
 
 export type MenuItem = {
@@ -7,7 +7,8 @@ export type MenuItem = {
     description: string;
     price: number;
     image: string;
-}
+};
+
 export type Restaurant = {
     _id: string;
     user: string;
@@ -18,28 +19,36 @@ export type Restaurant = {
     cuisines: string[];
     menus: MenuItem[];
     imageUrl: string;
-}
+};
+
+export type FilterOptions = {
+    cuisines: string[];
+    dietary?: string[];
+    features?: string[];
+};
 
 export type SearchedRestaurant = {
-    data:Restaurant[]
-}
+    data: Restaurant[];
+    filterOptions?: FilterOptions;  // Added filterOptions here
+};
 
 export type RestaurantState = {
     loading: boolean;
     restaurant: Restaurant | null;
     searchedRestaurant: SearchedRestaurant | null;
-    appliedFilter:string[];
-    singleRestaurant: Restaurant | null,
-    restaurantOrder:Orders[],
+    appliedFilter: string[];
+    singleRestaurant: Restaurant | null;
+    restaurantOrder: Orders[];
+    filterOptions: FilterOptions;  // Added to state
     createRestaurant: (formData: FormData) => Promise<void>;
     getRestaurant: () => Promise<void>;
     updateRestaurant: (formData: FormData) => Promise<void>;
-    searchRestaurant: (searchText: string, searchQuery: string, selectedCuisines: any) => Promise<void>;
+    searchRestaurant: (searchText: string, searchQuery: string, selectedCuisines: string[]) => Promise<void>;
     addMenuToRestaurant: (menu: MenuItem) => void;
     updateMenuToRestaurant: (menu: MenuItem) => void;
-    setAppliedFilter: (value:string) => void;
+    setAppliedFilter: (value: string) => void;
     resetAppliedFilter: () => void;
-    getSingleRestaurant: (restaurantId:string) => Promise<void>;
+    getSingleRestaurant: (restaurantId: string) => Promise<void>;
     getRestaurantOrders: () => Promise<void>;
-    updateRestaurantOrder: (orderId:string, status:string) => Promise<void>;
-}
+    updateRestaurantOrder: (orderId: string, status: string) => Promise<void>;
+};

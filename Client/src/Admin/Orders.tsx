@@ -11,11 +11,11 @@ import { useRestaurantStore } from "../store/useRestaurantStore";
 import { useEffect } from "react";
 
 const Orders = () => {
-  const { restaurantOrder, getRestaurantOrders, updateRestaurantOrder } =
+  const { restaurantOrders, getRestaurantOrders, updateOrderStatus } =
     useRestaurantStore();
 
   const handleStatusChange = async (id: string, status: string) => {
-    await updateRestaurantOrder(id, status);
+    await updateOrderStatus(id, status);
   };
 
   useEffect(() => {
@@ -28,9 +28,9 @@ const Orders = () => {
         Orders Overview
       </h1>
       <div className="space-y-8">
-        {restaurantOrder.map((order) => (
+        {restaurantOrders.map((order) => (
           <div
-            key={order._id} // ✅ Added key prop
+            key={order._id}
             className="flex flex-col md:flex-row justify-between items-start sm:items-center bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-gray-700"
           >
             <div className="flex-1 mb-6 sm:mb-0">

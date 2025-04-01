@@ -8,69 +8,54 @@ const API_END_POINT = "http://localhost:8000/api/v1/menu";
 axios.defaults.withCredentials = true;
 
 type MenuState = {
-  loading: boolean;
-  menu: any | null;
-  setLoading: (loading: boolean) => void;
-  createMenu: (formData: FormData) => Promise<void>;
-  editMenu: (menuId: string, formData: FormData) => Promise<void>;
-};
+    loading: boolean,
+    menu: null,
+    createMenu: (formData: FormData) => Promise<void>;
+    editMenu: (menuId: string, formData: FormData) => Promise<void>;
+}
 
-export const useMenuStore = create<MenuState>()(
-  persist(
-    (set) => ({
-      loading: false,
-      menu: null,
-
-      // ✅ Set loading state function
-      setLoading: (loading) => set({ loading }),
-
-      // ✅ Create menu function
-      createMenu: async (formData: FormData) => {
+export const useMenuStore = create<MenuState>()(persist((set) => ({
+    loading: false,
+    menu: null,
+    createMenu: async (formData: FormData) => {
         try {
-          set({ loading: true }); // Start loading
-          const { data } = await axios.post(`${API_END_POINT}/`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-
-          if (data.success) {
-            toast.success(data.message);
-            set({ menu: data.menu }); // ✅ Update menu state
-            useRestaurantStore.getState().addMenuToRestaurant(data.menu);
-          }
+            set({ loading: true });
+            const response = await axios.post(`${API_END_POINT}/`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (response.data.success) {
+                toast.success(response.data.message);
+                set({ loading: false, menu: response.data.menu });
+            }
+            // update restaurant 
+            useRestaurantStore.getState().addMenuToRestaurant(response.data.menu);
         } catch (error: any) {
-          toast.error(error.response?.data?.message || "Something went wrong");
-        } finally {
-          set({ loading: false }); // ✅ Ensure loading stops
+            toast.error(error.response.data.message);
+            set({ loading: false });
         }
-      },
-
-      // ✅ Edit menu function
-      editMenu: async (menuId: string, formData: FormData) => {
+    },
+    editMenu: async (menuId:string,formData: FormData) => {
         try {
-          set({ loading: true }); // Start loading
-          const { data } = await axios.put(`${API_END_POINT}/${menuId}`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-
-          if (data.success) {
-            toast.success(data.message);
-            set({ menu: data.menu }); // ✅ Update menu state
-            useRestaurantStore.getState().updateMenuToRestaurant(data.menu);
-          }
+            set({ loading: true });
+            const response = await axios.put(`${API_END_POINT}/${menuId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if(response.data.success){
+             toast.success(response.data.message);
+             set({loading:false, menu:response.data.menu});
+            }
+            // update restaurant menu
+            useRestaurantStore.getState().updateMenuToRestaurant(response.data.menu);
         } catch (error: any) {
-          toast.error(error.response?.data?.message || "Something went wrong");
-        } finally {
-          set({ loading: false }); // ✅ Ensure loading stops
+            toast.error(error.response.data.message);
+            set({ loading: false });
         }
-      },
-    }),
-    {
-      name: "menu-store",
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
-);
+    },
+}), {
+    name: "menu-name",
+    storage: createJSONStorage(() => localStorage)
+}))

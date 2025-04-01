@@ -11,4 +11,3 @@ router.route("/:id").put(isAuthenticated, upload.single("image"), editMenu);
 export default router;
 
 
-

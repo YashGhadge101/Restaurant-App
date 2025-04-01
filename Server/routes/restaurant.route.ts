@@ -1,4 +1,3 @@
-
 import express from "express"
 import { createRestaurant, getRestaurant, getRestaurantOrder, getSingleRestaurant, searchRestaurant, updateOrderStatus, updateRestaurant } from "../Controller/restaurant.controller";
 import upload from "../middlewares/multer";
@@ -15,6 +14,5 @@ router.route("/search/:searchText").get(isAuthenticated, searchRestaurant);
 router.route("/:id").get(isAuthenticated, getSingleRestaurant);
 
 export default router;
-
 
 
