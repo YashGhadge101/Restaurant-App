@@ -1,4 +1,4 @@
-import { MenuItem, RestaurantState, SearchedRestaurant } from "../types/restaurantType";
+import { MenuItem, RestaurantType, RestaurantOrder, RestaurantSearchResult, Restaurant } from "../types/restaurantType";
 import axios from "axios";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -7,197 +7,376 @@ import { createJSONStorage, persist } from "zustand/middleware";
 const API_END_POINT = "http://localhost:8000/api/v1/restaurant";
 axios.defaults.withCredentials = true;
 
-export const useRestaurantStore = create<RestaurantState>()(
+interface RestaurantStoreState {
+  // State
+  loading: boolean;
+  currentRestaurant: RestaurantType | null;
+  singleRestaurant: RestaurantType | null;
+  userRestaurants: RestaurantType[];
+  searchedRestaurants: RestaurantSearchResult | null;
+  appliedFilters: string[];
+  restaurantOrders: RestaurantOrder[];
+  filterOptions: { cuisines: string[] };
+  
+  // Restaurant CRUD Operations
+  createRestaurant: (formData: FormData) => Promise<RestaurantType>;
+  getUserRestaurants: () => Promise<void>;
+  getRestaurantById: (id: string) => Promise<void>;
+  getSingleRestaurant: (id: string) => Promise<Restaurant | undefined>;
+  updateRestaurant: (id: string, formData: FormData) => Promise<RestaurantType>;
+  deleteRestaurant: (id: string) => Promise<void>;
+  
+  // Search & Filtering
+  searchRestaurants: (
+    searchText: string, 
+    searchQuery: string, 
+    selectedCuisines: string[],
+    page?: number,
+    limit?: number
+  ) => Promise<void>;
+  setAppliedFilters: (filters: string[]) => void;
+  resetFilters: () => void;
+  
+  // Menu Management
+  addMenuToRestaurant: (menu: MenuItem) => void;
+  updateMenu: (menu: MenuItem) => void;
+  deleteMenu: (menuId: string) => void;
+  
+  // Order Management
+  getRestaurantOrders: (restaurantId?: string) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: string) => Promise<RestaurantOrder>;
+  
+  // Utility
+  setCurrentRestaurant: (restaurant: RestaurantType | null) => void;
+}
+
+export const useRestaurantStore = create<RestaurantStoreState>()(
   persist(
     (set, get) => ({
+      // Initial State
       loading: false,
-      restaurant: null,
-      searchedRestaurant: null,
-      appliedFilter: [],
+      currentRestaurant: null,
       singleRestaurant: null,
-      restaurantOrder: [],
-      filterOptions: { cuisines: [] }, // Added missing property
+      userRestaurants: [],
+      searchedRestaurants: null,
+      appliedFilters: [],
+      restaurantOrders: [],
+      filterOptions: { cuisines: [] },
 
-      createRestaurant: async (formData: FormData) => {
+      // Restaurant CRUD Operations
+      createRestaurant: async (formData) => {
+        set({ loading: true });
         try {
-          set({ loading: true });
-          const response = await axios.post(`${API_END_POINT}/`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
+          const response = await axios.post<{ 
+            success: boolean; 
+            restaurant: RestaurantType;
+            message?: string;
+          }>(`${API_END_POINT}/`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
           });
+      
           if (response.data.success) {
-            toast.success(response.data.message);
+            toast.success("Restaurant created successfully");
+            set(state => ({
+              userRestaurants: [...state.userRestaurants, response.data.restaurant], // Add to existing restaurants
+              loading: false
+            }));
+            return response.data.restaurant;
           }
+          throw new Error(response.data.message || "Failed to create restaurant");
         } catch (error: any) {
-          toast.error(error.response?.data?.message || "Failed to create restaurant");
-        } finally {
           set({ loading: false });
-        }
-      },
-
-      getRestaurant: async () => {
-        try {
-          set({ loading: true });
-          const response = await axios.get(`${API_END_POINT}/`);
-          if (response.data.success) {
-            set({ restaurant: response.data.restaurant });
-          }
-        } catch (error: any) {
-          if (error.response?.status === 404) {
-            set({ restaurant: null });
-          }
-        } finally {
-          set({ loading: false });
-        }
-      },
-
-      updateRestaurant: async (formData: FormData) => {
-        try {
-          set({ loading: true });
-          const response = await axios.put(`${API_END_POINT}/`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
+          
+          // Handle restaurant limit/existing restaurant case
+          if (error.response?.data?.message?.includes("already exists")) {
+            try {
+              // Fetch all user restaurants
+              const { data } = await axios.get<{
+                success: boolean;
+                restaurants: RestaurantType[];
+                message?: string;
+              }>(`${API_END_POINT}/user`);
+              
+              if (data.success) {
+                set({ 
+                  userRestaurants: data.restaurants,
+                  currentRestaurant: data.restaurants[0] || null
+                });
+              }
+              throw new Error("RESTAURANT_LIMIT_REACHED");
+            } catch (fetchError) {
+              throw new Error("Failed to fetch existing restaurants");
             }
-          });
-          if (response.data.success) {
-            toast.success(response.data.message);
           }
-        } catch (error: any) {
-          toast.error(error.response?.data?.message || "Failed to update restaurant");
-        } finally {
-          set({ loading: false });
+          
+          // Handle other errors
+          const errorMessage = error.response?.data?.message || 
+                             error.message || 
+                             "Failed to create restaurant";
+          toast.error(errorMessage);
+          throw new Error(errorMessage);
         }
       },
 
-      searchRestaurant: async (searchText: string, searchQuery: string, selectedCuisines: string[]) => {
+      getUserRestaurants: async () => {
+        set({ loading: true });
         try {
-          set({ loading: true });
-          
-          const params = new URLSearchParams();
-          const searchTerm = searchText || searchQuery;
-          params.set("search", searchTerm);
-          
-          if (selectedCuisines.length > 0) {
-            params.set("cuisines", selectedCuisines.join(","));
-          }
-
-          const response = await axios.get(`${API_END_POINT}/restaurants/search?${params.toString()}`);
+          const response = await axios.get<{ 
+            success: boolean; 
+            restaurants: RestaurantType[] 
+          }>(`${API_END_POINT}/user`);
           
           if (response.data.success) {
-            const searchedData: SearchedRestaurant = {
-              data: response.data.data,
-              filterOptions: response.data.filterOptions || { cuisines: [] }
-            };
-            
-            set({ 
-              loading: false,
-              searchedRestaurant: searchedData,
-              filterOptions: searchedData.filterOptions
+            set({
+              userRestaurants: response.data.restaurants,
+              loading: false
             });
           }
-        } catch (error) {
-          console.error("Search error:", error);
-          set({ loading: false });
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to fetch restaurants");
+          set({ loading: false, userRestaurants: [] });
         }
       },
 
-      addMenuToRestaurant: (menu: MenuItem) => {
-        set((state) => ({
-          restaurant: state.restaurant 
+      getRestaurantById: async (id) => {
+        set({ loading: true });
+        try {
+          const response = await axios.get<{ 
+            success: boolean; 
+            restaurant: RestaurantType 
+          }>(`${API_END_POINT}/${id}`);
+          
+          if (response.data.success) {
+            set({ 
+              currentRestaurant: response.data.restaurant,
+              loading: false 
+            });
+          }
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to fetch restaurant");
+          set({ loading: false, currentRestaurant: null });
+        }
+      },
+
+      getSingleRestaurant: async (id) => {
+        set({ loading: true });
+        try {
+          const response = await axios.get<{ 
+            success: boolean; 
+            restaurant: RestaurantType 
+          }>(`${API_END_POINT}/${id}`);
+          
+          if (response.data.success) {
+            set({ 
+              singleRestaurant: response.data.restaurant,
+              loading: false 
+            });
+            return response.data.restaurant;
+          }
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to fetch restaurant");
+          set({ loading: false, singleRestaurant: null });
+          throw error;
+        }
+      },
+
+      updateRestaurant: async (id, formData) => {
+        set({ loading: true });
+        try {
+          const response = await axios.put<{ 
+            success: boolean; 
+            restaurant: RestaurantType 
+          }>(`${API_END_POINT}/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          
+          if (response.data.success) {
+            toast.success("Restaurant updated successfully");
+            set(state => ({
+              userRestaurants: state.userRestaurants.map(r => 
+                r._id === id ? response.data.restaurant : r
+              ),
+              currentRestaurant: response.data.restaurant,
+              singleRestaurant: 
+                state.singleRestaurant?._id === id ? response.data.restaurant : state.singleRestaurant,
+              loading: false
+            }));
+            return response.data.restaurant;
+          }
+          throw new Error("Failed to update restaurant");
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to update restaurant");
+          set({ loading: false });
+          throw error;
+        }
+      },
+
+      deleteRestaurant: async (id) => {
+        set({ loading: true });
+        try {
+          const response = await axios.delete<{ success: boolean }>(`${API_END_POINT}/${id}`);
+          if (response.data.success) {
+            toast.success("Restaurant deleted successfully");
+            set(state => ({
+              userRestaurants: state.userRestaurants.filter(r => r._id !== id),
+              currentRestaurant: 
+                state.currentRestaurant?._id === id ? null : state.currentRestaurant,
+              singleRestaurant:
+                state.singleRestaurant?._id === id ? null : state.singleRestaurant,
+              loading: false
+            }));
+          }
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to delete restaurant");
+          set({ loading: false });
+          throw error;
+        }
+      },
+
+      // Search & Filtering
+      searchRestaurants: async (searchText, searchQuery, selectedCuisines, page = 1, limit = 20) => {
+        set({ loading: true });
+        try {
+          const params = new URLSearchParams();
+          params.set("searchQuery", searchQuery);
+          params.set("selectedCuisines", selectedCuisines.join(","));
+          params.set("page", page.toString());
+          params.set("limit", limit.toString());
+
+          const response = await axios.get<RestaurantSearchResult>(
+            `${API_END_POINT}/search/${searchText}?${params.toString()}`
+          );
+          
+          set({ 
+            searchedRestaurants: response.data,
+            filterOptions: response.data.filters || { cuisines: [] },
+            loading: false 
+          });
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to search restaurants");
+          set({ loading: false, searchedRestaurants: null });
+        }
+      },
+
+      setAppliedFilters: (filters) => {
+        set({ appliedFilters: filters });
+      },
+
+      resetFilters: () => {
+        set({ appliedFilters: [] });
+      },
+
+      // Menu Management
+      addMenuToRestaurant: (menu) => {
+        set(state => ({
+          currentRestaurant: state.currentRestaurant 
             ? { 
-                ...state.restaurant, 
-                menus: [...state.restaurant.menus, menu] 
+                ...state.currentRestaurant, 
+                menus: [...(state.currentRestaurant.menus || []), menu] 
               } 
             : null
         }));
       },
 
-      updateMenuToRestaurant: (updatedMenu: MenuItem) => {
-        set((state) => {
-          if (!state.restaurant) return state;
+      updateMenu: (updatedMenu) => {
+        set(state => {
+          if (!state.currentRestaurant) return state;
           
-          const updatedMenuList = state.restaurant.menus.map((menu) => 
+          const updatedMenus = (state.currentRestaurant.menus || []).map(menu => 
             menu._id === updatedMenu._id ? updatedMenu : menu
           );
           
           return {
-            restaurant: {
-              ...state.restaurant,
-              menus: updatedMenuList
+            currentRestaurant: {
+              ...state.currentRestaurant,
+              menus: updatedMenus
             }
           };
         });
       },
 
-      setAppliedFilter: (value: string) => {
-        set((state) => {
-          const isAlreadyApplied = state.appliedFilter.includes(value);
-          return { 
-            appliedFilter: isAlreadyApplied 
-              ? state.appliedFilter.filter((item) => item !== value) 
-              : [...state.appliedFilter, value] 
+      deleteMenu: (menuId) => {
+        set(state => {
+          if (!state.currentRestaurant) return state;
+          
+          const updatedMenus = (state.currentRestaurant.menus || []).filter(
+            menu => menu._id !== menuId
+          );
+          
+          return {
+            currentRestaurant: {
+              ...state.currentRestaurant,
+              menus: updatedMenus
+            }
           };
         });
       },
 
-      resetAppliedFilter: () => {
-        set({ appliedFilter: [] });
-      },
-
-      getSingleRestaurant: async (restaurantId: string) => {
+      // Order Management
+      getRestaurantOrders: async (restaurantId) => {
+        set({ loading: true });
         try {
-          const response = await axios.get(`${API_END_POINT}/${restaurantId}`);
+          const url = restaurantId 
+            ? `${API_END_POINT}/${restaurantId}/orders`
+            : `${API_END_POINT}/orders`;
+            
+          const response = await axios.get<{
+            success: boolean;
+            orders: RestaurantOrder[];
+          }>(url);
+          
           if (response.data.success) {
-            set({ singleRestaurant: response.data.restaurant });
+            set({ 
+              restaurantOrders: response.data.orders,
+              loading: false 
+            });
           }
-        } catch (error) {
-          console.error("Failed to fetch restaurant:", error);
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Failed to fetch orders");
+          set({ loading: false, restaurantOrders: [] });
         }
       },
 
-      getRestaurantOrders: async () => {
+      updateOrderStatus: async (orderId, status) => {
         try {
-          const response = await axios.get(`${API_END_POINT}/order`);
-          if (response.data.success) {
-            set({ restaurantOrder: response.data.orders });
-          }
-        } catch (error) {
-          console.error("Failed to fetch orders:", error);
-        }
-      },
-
-      updateRestaurantOrder: async (orderId: string, status: string) => {
-        try {
-          const response = await axios.put(
-            `${API_END_POINT}/order/${orderId}/status`, 
+          const response = await axios.put<{
+            success: boolean;
+            order: RestaurantOrder;
+          }>(
+            `${API_END_POINT}/orders/${orderId}/status`, 
             { status }, 
-            {
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            }
+            { headers: { 'Content-Type': 'application/json' } }
           );
           
           if (response.data.success) {
-            const updatedOrders = get().restaurantOrder.map((order) => 
-              order._id === orderId ? { ...order, status } : order
+            const updatedOrders = get().restaurantOrders.map(order => 
+              order._id === orderId ? response.data.order : order
             );
             
-            set({ restaurantOrder: updatedOrders });
-            toast.success(response.data.message);
+            set({ restaurantOrders: updatedOrders });
+            toast.success("Order status updated successfully");
+            return response.data.order;
           }
+          throw new Error("Failed to update order status");
         } catch (error: any) {
-          toast.error(error.response?.data?.message || "Failed to update order");
+          toast.error(error.response?.data?.message || "Failed to update order status");
+          throw error;
         }
+      },
+
+      // Utility
+      setCurrentRestaurant: (restaurant) => {
+        set({ currentRestaurant: restaurant });
       }
     }),
     {
       name: 'restaurant-store',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ 
-        restaurant: state.restaurant,
-        singleRestaurant: state.singleRestaurant
+      partialize: (state) => ({
+        currentRestaurant: state.currentRestaurant,
+        singleRestaurant: state.singleRestaurant,
+        userRestaurants: state.userRestaurants,
+        appliedFilters: state.appliedFilters
       })
     }
   )

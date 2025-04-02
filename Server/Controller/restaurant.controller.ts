@@ -122,7 +122,7 @@ export const searchRestaurant = async (req: Request, res: Response): Promise<voi
         const searchQuery = req.query.searchQuery as string || "";
         const selectedCuisines = (req.query.selectedCuisines as string || "").split(",").filter(cuisine => cuisine);
         const query: any = {};
-
+        console.log("Received search query:", searchText);
         console.log(selectedCuisines);
 
         if (searchText) {

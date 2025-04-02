@@ -4,49 +4,57 @@ import { Menu } from "../models/menu.model";
 import { Restaurant } from "../models/restaurant.model";
 import mongoose from "mongoose";
 
-export const addMenu = async (req: Request, res: Response) => {
+export const addMenu = async (req: Request, res: Response): Promise<void> => {
     try {
         const { name, description, price } = req.body;
         const file = req.file;
 
-        if (!file) {
+        // Validate required fields
+        if (!name || !description || !price || !file) {
             res.status(400).json({
                 success: false,
-                message: "Image is required"
+                message: "All fields are required including image"
             });
             return;
         }
 
-        const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
-        const menu: any = await Menu.create({
-            name,
-            description,
-            price,
-            image: imageUrl
-        });
-
+        // Find the restaurant associated with the logged-in user
         const restaurant = await Restaurant.findOne({ user: req.id });
-
-        if (restaurant) {
-            if (!Array.isArray(restaurant.menus)) {
-                restaurant.menus = [];
-            }
-            (restaurant.menus as mongoose.Schema.Types.ObjectId[]).push(menu._id); // Fix applied
-            await restaurant.save();
+        if (!restaurant) {
+            res.status(404).json({
+                success: false,
+                message: "Restaurant not found"
+            });
+            return;
         }
 
+        const imageUrl = await uploadImageOnCloudinary(file);
+        const menu:any = await Menu.create({
+            name,
+            description,
+            price: Number(price),
+            image: imageUrl,
+            restaurantId: restaurant._id // Add restaurant reference
+        });
+
+        // Add menu to restaurant's menus array
+        restaurant.menus.push(menu._id);
+        await restaurant.save();
 
         res.status(201).json({
             success: true,
             message: "Menu added successfully",
             menu
         });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error" 
+        });
     }
 };
-
 export const editMenu = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

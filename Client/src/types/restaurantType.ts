@@ -1,4 +1,3 @@
-// In your restaurantType.ts file
 import { Orders } from "./orderType";
 
 export type MenuItem = {
@@ -21,25 +20,44 @@ export type Restaurant = {
     imageUrl: string;
 };
 
+export type RestaurantType = Restaurant;
+
 export type FilterOptions = {
     cuisines: string[];
     dietary?: string[];
     features?: string[];
 };
 
-export type SearchedRestaurant = {
+export interface SearchedRestaurant {
+    success: boolean;
     data: Restaurant[];
-    filterOptions?: FilterOptions;  // Added filterOptions here
-};
+    filterOptions?: {
+        cuisines: string[];
+    };
+}
+
+export type RestaurantOrder = Orders;
+
+export interface RestaurantSearchResult {
+    data: Restaurant[];
+    filters?: {
+      cuisines: string[];
+    };
+    // Add other properties if your API returns more
+    page?: number;
+    totalPages?: number;
+    totalRestaurants?: number;
+  }
 
 export type RestaurantState = {
     loading: boolean;
     restaurant: Restaurant | null;
     searchedRestaurant: SearchedRestaurant | null;
     appliedFilter: string[];
+    appliedFilters: string[];
     singleRestaurant: Restaurant | null;
     restaurantOrder: Orders[];
-    filterOptions: FilterOptions;  // Added to state
+    filterOptions: FilterOptions;
     createRestaurant: (formData: FormData) => Promise<void>;
     getRestaurant: () => Promise<void>;
     updateRestaurant: (formData: FormData) => Promise<void>;
@@ -51,4 +69,6 @@ export type RestaurantState = {
     getSingleRestaurant: (restaurantId: string) => Promise<void>;
     getRestaurantOrders: () => Promise<void>;
     updateRestaurantOrder: (orderId: string, status: string) => Promise<void>;
+    setAppliedFilters: (filters: string[]) => void;
+    resetFilters: () => void;
 };
