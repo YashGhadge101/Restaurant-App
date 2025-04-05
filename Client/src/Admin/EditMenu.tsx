@@ -37,7 +37,7 @@ const EditMenu = ({
     image: undefined,
   });
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
-  const {loading, editMenu} = useMenuStore();
+  const { loading, editMenu } = useMenuStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -52,23 +52,23 @@ const EditMenu = ({
       setError(fieldErrors as Partial<MenuFormSchema>);
       return;
     }
-     
-    // api ka kaam start from here
+
     try {
       const formData = new FormData();
       formData.append("name", input.name);
       formData.append("description", input.description);
       formData.append("price", input.price.toString());
-      if(input.image){
+      if (input.image) {
         formData.append("image", input.image);
       }
       await editMenu(selectedMenu._id, formData);
+      setEditOpen(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     setInput({
       name: selectedMenu?.name || "",
       description: selectedMenu?.description || "",
@@ -76,6 +76,7 @@ const EditMenu = ({
       image: undefined,
     });
   }, [selectedMenu]);
+
   return (
     <Dialog open={editOpen} onOpenChange={setEditOpen}>
       <DialogContent>
@@ -95,7 +96,11 @@ const EditMenu = ({
               onChange={changeEventHandler}
               placeholder="Enter menu name"
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.name}</span>}
+            {error && (
+              <span className="text-xs font-medium text-red-600">
+                {error.name}
+              </span>
+            )}
           </div>
           <div>
             <Label>Description</Label>
@@ -106,7 +111,11 @@ const EditMenu = ({
               onChange={changeEventHandler}
               placeholder="Enter menu description"
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.description}</span>}
+            {error && (
+              <span className="text-xs font-medium text-red-600">
+                {error.description}
+              </span>
+            )}
           </div>
           <div>
             <Label>Price in (Rupees)</Label>
@@ -117,7 +126,11 @@ const EditMenu = ({
               onChange={changeEventHandler}
               placeholder="Enter menu price"
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.price}</span>}
+            {error && (
+              <span className="text-xs font-medium text-red-600">
+                {error.price}
+              </span>
+            )}
           </div>
           <div>
             <Label>Upload Menu Image</Label>
@@ -128,7 +141,11 @@ const EditMenu = ({
                 setInput({ ...input, image: e.target.files?.[0] || undefined })
               }
             />
-            {error && <span className="text-xs font-medium text-red-600">{error.image?.name}</span>}
+            {error && (
+              <span className="text-xs font-medium text-red-600">
+                {error.image?.name}
+              </span>
+            )}
           </div>
           <DialogFooter className="mt-5">
             {loading ? (

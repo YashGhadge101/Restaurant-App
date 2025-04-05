@@ -15,12 +15,13 @@ export interface AuthenticatedRequest extends Request {
 
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const token = req.cookies?.token;
+        const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
         if (!token) {
             res.status(401).json({ success: false, message: "User not authenticated" });
             return;
         }
+
         const decode = jwt.verify(token, process.env.SECRET_KEY!) as jwt.JwtPayload;
 
         if (!decode || !decode.userId) {
@@ -35,4 +36,3 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         res.status(401).json({ success: false, message: "Authentication failed" });
     }
 };
-

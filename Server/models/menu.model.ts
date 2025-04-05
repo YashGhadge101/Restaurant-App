@@ -1,11 +1,10 @@
 import mongoose, { Document } from "mongoose";
-
 export interface IMenu {
     name: string;
     description: string;
     price: number;
     image: string;
-    restaurantId: mongoose.Schema.Types.ObjectId; // Link to Restaurant
+    restaurantId: mongoose.Schema.Types.ObjectId; 
 }
 
 export interface IMenuDocument extends IMenu, Document {

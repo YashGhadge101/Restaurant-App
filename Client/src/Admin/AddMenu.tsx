@@ -26,7 +26,7 @@ const AddMenu = () => {
   });
   const [open, setOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
-  const [selectedMenu, setSelectedMenu] = useState<any>(null); // Initialize with null
+  const [selectedMenu, setSelectedMenu] = useState<any>(null);
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
   const { loading, createMenu } = useMenuStore();
   const { restaurant } = useRestaurantStore();
@@ -38,7 +38,7 @@ const AddMenu = () => {
 
   useEffect(() => {
     return () => {
-      useMenuStore.setState({ loading: false }); // Reset on unmount
+      useMenuStore.setState({ loading: false });
     };
   }, []);
 
@@ -58,6 +58,7 @@ const AddMenu = () => {
       formData.append("description", input.description);
       formData.append("price", input.price.toString());
       if (input.image) formData.append("image", input.image);
+      formData.append("restaurantId", restaurant?._id.toString() || ""); //send Restaurant Id
 
       await createMenu(formData);
 
@@ -173,7 +174,7 @@ const AddMenu = () => {
           </DialogContent>
         </Dialog>
       </div>
-      {restaurant?.menus?.map((menu: any, idx: number) => ( // Add optional chaining
+      {restaurant?.menus?.map((menu: any, idx: number) => (
         <div key={idx} className="mt-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
             <img
@@ -194,6 +195,7 @@ const AddMenu = () => {
               onClick={() => {
                 setSelectedMenu(menu);
                 setEditOpen(true);
+                console.log("Selected Menu:", menu);
               }}
               size={"sm"}
               className="bg-orange hover:bg-hoverOrange mt-2"
@@ -202,7 +204,7 @@ const AddMenu = () => {
             </Button>
           </div>
         </div>
-      )) ?? null} {/* Add nullish coalescing operator */}
+      )) ?? null}
       <EditMenu
         selectedMenu={selectedMenu}
         editOpen={editOpen}
