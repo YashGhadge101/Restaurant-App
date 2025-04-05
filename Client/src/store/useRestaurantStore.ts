@@ -16,12 +16,12 @@ export const useRestaurantStore = create<RestaurantState>()(
       searchedRestaurant: null,
       appliedFilter: [],
       singleRestaurant: null,
-      restaurantOrder: [],
+      restaurantOrders: [],
       restaurant: null,
 
       createRestaurant: async (formData: FormData) => {
+        set({ loading: true });
         try {
-          set({ loading: true });
           const response = await axios.post(`${API_END_POINT}/`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
@@ -51,9 +51,10 @@ export const useRestaurantStore = create<RestaurantState>()(
           set({ loading: false });
         }
       },
+
       getRestaurants: async () => {
+        set({ loading: true });
         try {
-          set({ loading: true });
           const response = await axios.get(`${API_END_POINT}/`);
           if (response.data.success) {
             set({ loading: false, restaurants: response.data.restaurants });
@@ -65,15 +66,21 @@ export const useRestaurantStore = create<RestaurantState>()(
           set({ loading: false });
         }
       },
+
       updateRestaurant: async (formData: FormData) => {
+        set({ loading: true });
         try {
-          set({ loading: true });
           const restaurantId = formData.get("restaurantId") as string;
+          console.log("Full formData:", formData);
+          console.log("Extracted restaurantId:", restaurantId);
+          console.log("Restaurant ID being sent:", restaurantId);
+
           const response = await axios.put(`${API_END_POINT}/${restaurantId}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           });
+
           if (response.data.success) {
             toast.success(response.data.message);
             set((state) => ({
@@ -82,26 +89,33 @@ export const useRestaurantStore = create<RestaurantState>()(
               ),
               loading: false,
             }));
+            console.log("Restaurant updated successfully:", response.data.restaurant);
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
           set({ loading: false });
+          console.error("Error updating restaurant:", error);
         }
       },
+
       searchRestaurant: async (searchText: string, searchQuery: string, selectedCuisines: any) => {
+        set({ loading: true });
         try {
-          set({ loading: true });
           const params = new URLSearchParams();
           params.set("searchQuery", searchQuery);
           params.set("selectedCuisines", selectedCuisines.join(","));
           const response = await axios.get(`${API_END_POINT}/search/${searchText}?${params.toString()}`);
           if (response.data.success) {
             set({ loading: false, searchedRestaurant: response.data });
+            console.log("Restaurant search successful:", response.data);
           }
-        } catch (error) {
+        } catch (error: any) {
+          console.error("Error searching restaurant:", error);
+          toast.error(error.response?.data?.message || "Failed to search restaurants.");
           set({ loading: false });
         }
       },
+
       addMenuToRestaurant: (menu: MenuItem) => {
         set((state: RestaurantState) => {
           const restaurantIndex = state.restaurants.findIndex((r: Restaurant) => r._id === menu.restaurantId);
@@ -133,6 +147,7 @@ export const useRestaurantStore = create<RestaurantState>()(
           return state;
         });
       },
+
       setAppliedFilter: (value: string) => {
         set((state) => {
           const isAlreadyApplied = state.appliedFilter.includes(value);
@@ -140,46 +155,94 @@ export const useRestaurantStore = create<RestaurantState>()(
           return { appliedFilter: updatedFilter };
         });
       },
+
       resetAppliedFilter: () => {
         set({ appliedFilter: [] });
       },
+
       getSingleRestaurant: async (restaurantId: string) => {
+        set({ loading: true });
         try {
           const response = await axios.get(`${API_END_POINT}/${restaurantId}`);
           if (response.data.success) {
+            set({
+              singleRestaurant: response.data.restaurant as Restaurant & {
+                menus: MenuItem[];
+              },
+              restaurant: response.data.restaurant as Restaurant & {
+                menus: MenuItem[];
+              },
+              loading: false,
+            });
             return response.data.restaurant as Restaurant & { menus: MenuItem[] };
+          } else {
+            console.error(
+              "Error fetching restaurant:",
+              response.data.message || "Restaurant not found"
+            );
+            set({ singleRestaurant: null, restaurant: null, loading: false });
+            return null;
           }
-          return null;
-        } catch (error) {
+        } catch (error: any) {
+          console.error("Error fetching restaurant:", error);
+          set({ singleRestaurant: null, restaurant: null, loading: false });
           return null;
         }
       },
       getRestaurantOrders: async () => {
+        set({ loading: true });
         try {
-          const response = await axios.get(`${API_END_POINT}/order`);
-          if (response.data.success) {
-            set({ restaurantOrder: response.data.orders });
-          }
-        } catch (error) {
-          console.log(error);
+          const { data } = await axios.get(`${API_END_POINT}/orders`);
+          set({ restaurantOrders: data.orders });
+          console.log("Restaurant orders fetched:", data.orders);
+        } catch (error: any) {
+          console.error("Error fetching orders:", error);
+          toast.error(error.response?.data?.message || "Failed to fetch orders.");
+          set({ restaurantOrders: [] });
+        } finally {
+          set({ loading: false });
         }
       },
-      updateRestaurantOrder: async (orderId: string, status: string) => {
+
+      updateOrderStatus: async (orderId, status) => {
+        set({ loading: true });
         try {
-          const response = await axios.put(`${API_END_POINT}/order/${orderId}/status`, { status }, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          if (response.data.success) {
-            const updatedOrder = get().restaurantOrder.map((order: Orders) => {
-              return order._id === orderId ? { ...order, status: response.data.status } : order;
-            });
-            set({ restaurantOrder: updatedOrder });
-            toast.success(response.data.message);
-          }
+          await axios.patch(`${API_END_POINT}/orders/${orderId}`, { status });
+          toast.success(`Order status updated to ${status}`);
+          const { data } = await axios.get(`${API_END_POINT}/orders`);
+          set({ restaurantOrders: data.orders });
+          console.log(`Order ${orderId} status updated to ${status}`);
         } catch (error: any) {
-          toast.error(error.response.data.message);
+          console.error("Error updating order status:", error);
+          toast.error(error.response?.data?.message || "Failed to update order status.");
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      getRestaurantMenus: async (restaurantId: string) => {
+        set({ loading: true });
+        try {
+          const response = await axios.get(`${API_END_POINT}/${restaurantId}/menus`);
+          if (response.data.success) {
+            set((state) => ({
+              singleRestaurant: state.singleRestaurant?._id === restaurantId
+                ? { ...state.singleRestaurant, menus: response.data.menus }
+                : state.singleRestaurant,
+              restaurants: state.restaurants.map(restaurant =>
+                restaurant._id === restaurantId
+                  ? { ...restaurant, menus: response.data.menus }
+                  : restaurant
+              ),
+              loading: false,
+            }));
+            return response.data.menus as MenuItem[];
+          }
+          return [];
+        } catch (error) {
+          console.error("Error fetching menus:", error);
+          set({ loading: false });
+          return [];
         }
       },
     }),

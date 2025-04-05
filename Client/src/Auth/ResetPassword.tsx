@@ -2,7 +2,7 @@ import { Loader2, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
-import { motion } from "framer-motion"; // Import Framer Motion
+import { motion } from "framer-motion";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState<string>("");
@@ -42,18 +42,33 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full">
-      <form
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-center justify-center min-h-screen w-full"
+    >
+      <motion.form
         onSubmit={resetPasswordHandler}
         className="flex flex-col gap-5 md:p-8 w-full max-w-md rounded-lg mx-4 border border-gray-200 shadow-lg"
       >
-        <div className="text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
           <h1 className="font-extrabold text-2xl mb-2">Reset Password</h1>
           <p className="text-sm text-gray-600">Enter your new password to reset your old one.</p>
-        </div>
+        </motion.div>
 
         {/* New Password Input */}
-        <div className="relative w-full">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="relative w-full"
+        >
           <Input
             type="password"
             value={newPassword}
@@ -62,10 +77,15 @@ const ResetPassword = () => {
             className="pl-10 focus-visible:ring-1"
           />
           <LockKeyhole className="absolute inset-y-2 left-2 text-gray-600 pointer-events-none" />
-        </div>
+        </motion.div>
 
         {/* Confirm Password Input */}
-        <div className="relative w-full">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="relative w-full"
+        >
           <Input
             type="password"
             value={confirmPassword}
@@ -74,10 +94,19 @@ const ResetPassword = () => {
             className="pl-10 focus-visible:ring-1"
           />
           <LockKeyhole className="absolute inset-y-2 left-2 text-gray-600 pointer-events-none" />
-        </div>
+        </motion.div>
 
         {/* Error Message */}
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-red-500 text-sm"
+          >
+            {error}
+          </motion.p>
+        )}
 
         {/* Reset Password Button with Framer Motion Animation */}
         <motion.button
@@ -96,14 +125,19 @@ const ResetPassword = () => {
           )}
         </motion.button>
 
-        <span className="text-center">
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
           Back to{" "}
           <Link to="/login" className="text-blue-500">
             Login
           </Link>
-        </span>
-      </form>
-    </div>
+        </motion.span>
+      </motion.form>
+    </motion.div>
   );
 };
 

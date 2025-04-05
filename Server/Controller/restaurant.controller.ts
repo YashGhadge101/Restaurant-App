@@ -1,7 +1,10 @@
+// restaurant.controller.ts
 import { Request, Response } from "express";
 import { Restaurant } from "../models/restaurant.model";
 import uploadImageOnCloudinary from "../Utils/imageUpload";
 import { Order } from "../models/order.model";
+import { Menu } from "../models/menu.model";
+import mongoose from "mongoose";
 
 export const createRestaurant = async (
   req: Request,
@@ -10,8 +13,6 @@ export const createRestaurant = async (
   try {
     const { restaurantName, city, country, deliveryTime, cuisines } = req.body;
     const file = req.file;
-
-    // Removed the duplicate restaurant check here!
 
     if (!file) {
       res.status(400).json({
@@ -110,6 +111,45 @@ export const updateRestaurant = async (
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getRestaurantMenus = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { restaurantId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid restaurant ID format.",
+      });
+      return;
+    }
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      res.status(404).json({
+        success: false,
+        message: "Restaurant not found.",
+      });
+      return;
+    }
+
+    const menus = await Menu.find({ restaurantId }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      menus,
+    });
+  } catch (error) {
+    console.error("Error fetching menus:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
@@ -216,7 +256,7 @@ export const getSingleRestaurant = async (
     const restaurantId = req.params.id;
     const restaurant = await Restaurant.findById(restaurantId).populate({
       path: "menus",
-      model: "Menu", // Explicitly specify the Menu model
+      model: "Menu",
       options: { createdAt: -1 },
     });
     if (!restaurant) {

@@ -1,4 +1,5 @@
 import mongoose, { Document } from "mongoose";
+
 export interface IMenu {
     name: string;
     description: string;
@@ -13,30 +14,30 @@ export interface IMenuDocument extends IMenu, Document {
 }
 
 const menuSchema = new mongoose.Schema<IMenuDocument>(
-  {
-    name: {
-      type: String,
-      required: true,
+    {
+        name: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        price: {
+            type: Number,
+            required: true,
+        },
+        image: {
+            type: String,
+            required: true,
+        },
+        restaurantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Restaurant", // Reference to Restaurant
+            required: true,
+        },
     },
-    description: {
-      type: String,
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
-    image: {
-      type: String,
-      required: true,
-    },
-    restaurantId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Restaurant", // Reference to Restaurant
-      required: true,
-    },
-  },
-  { timestamps: true }
+    { timestamps: true }
 );
 
 export const Menu = mongoose.model<IMenuDocument>("Menu", menuSchema);

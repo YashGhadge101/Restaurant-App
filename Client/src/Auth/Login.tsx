@@ -2,7 +2,7 @@ import { Separator } from "@radix-ui/react-separator";
 import { Loader2, LockKeyhole, Mail } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // Import Framer Motion
+import { motion } from "framer-motion";
 import { Input } from "../components/ui/input";
 import { LoginInputState, userLoginSchema } from "../Schema/userSchema";
 import { useUserStore } from "../store/useUserStore";
@@ -21,8 +21,8 @@ const Login = () => {
 
   const loginSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
-    setServerError(null); // Clear previous server errors
-    setErrors({}); // Reset validation errors
+    setServerError(null);
+    setErrors({});
 
     const result = userLoginSchema.safeParse(input);
     if (!result.success) {
@@ -39,17 +39,32 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <form
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-center justify-center min-h-screen"
+    >
+      <motion.form
         onSubmit={loginSubmitHandler}
         className="md:p-8 w-full max-w-md rounded-lg md:border border-gray-200 mx-4"
       >
-        <div className="mb-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-4 text-center"
+        >
           <h1 className="font-bold text-2xl">𝕋𝕒𝕤𝕥𝕖 & 𝕋𝕨𝕚𝕤𝕥</h1>
-        </div>
+        </motion.div>
 
         {/* Email Input */}
-        <div className="mb-4">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-4"
+        >
           <div className="relative">
             <Input
               type="email"
@@ -62,10 +77,15 @@ const Login = () => {
             <Mail className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
           </div>
           {errors.email && <span className="text-xs text-red-500">{errors.email}</span>}
-        </div>
+        </motion.div>
 
         {/* Password Input */}
-        <div className="mb-4">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-4"
+        >
           <div className="relative">
             <Input
               type="password"
@@ -78,10 +98,19 @@ const Login = () => {
             <LockKeyhole className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
           </div>
           {errors.password && <span className="text-xs text-red-500">{errors.password}</span>}
-        </div>
+        </motion.div>
 
         {/* Display Server Error */}
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-sm text-red-600"
+          >
+            {serverError}
+          </motion.p>
+        )}
 
         {/* Login Button with Framer Motion Animation */}
         <div className="mb-10">
@@ -102,24 +131,34 @@ const Login = () => {
           </motion.button>
 
           {/* Forgot Password Link */}
-          <div className="mt-4 text-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 text-center"
+          >
             <Link to="/forgot-password" className="hover:text-blue-500 hover:underline">
               Forgot Password?
             </Link>
-          </div>
+          </motion.div>
         </div>
 
         <Separator />
 
         {/* Signup Link */}
-        <p className="mt-2 text-center">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="mt-2 text-center"
+        >
           Don't have an account?{" "}
           <Link to="/Signup" className="text-blue-500">
             Signup
           </Link>
-        </p>
-      </form>
-    </div>
+        </motion.p>
+      </motion.form>
+    </motion.div>
   );
 };
 

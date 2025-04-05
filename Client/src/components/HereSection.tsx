@@ -65,10 +65,10 @@ const HereSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [textKey, setTextKey] = useState(0);
 
-  const fullText = "Good Food, Great Moments, Right at Your Door!";
+  const fullText = "Order AnyTime & AnyWhere!";
   const words = fullText.split(" ");
 
-  useEffect(() => {
+  useEffect(() => { 
     const imageInterval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 5000);

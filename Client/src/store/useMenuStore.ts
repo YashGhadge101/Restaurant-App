@@ -25,62 +25,69 @@ type MenuState = {
 
 export const useMenuStore = create<MenuState>()(
   persist(
-    (set) => ({
-      loading: false,
-      menu: null,
-      createMenu: async (formData: FormData) => {
-        set({ loading: true });
-        try {
-          // No changes needed here, as formData already contains restaurantId
-          const response = await axios.post(`${API_END_POINT}/`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+      (set) => ({
+          loading: false,
+          menu: null,
+          createMenu: async (formData: FormData) => {
+              set({ loading: true });
+              try {
+                  const response = await axios.post(`${API_END_POINT}/`, formData, {
+                      headers: { "Content-Type": "multipart/form-data" },
+                  });
 
-          if (!response.data.success) {
-            throw new Error(response.data.message);
-          }
+                  if (!response.data.success) {
+                      throw new Error(response.data.message);
+                  }
 
-          set({ loading: false, menu: response.data.menu });
-          useRestaurantStore.getState().addMenuToRestaurant(response.data.menu);
-          toast.success("Menu created successfully!");
-        } catch (error: any) {
-          set({ loading: false });
-          const message =
-            error.response?.data?.message ||
-            error.message ||
-            "An unexpected error occurred.";
-          toast.error(message);
-          throw error;
-        }
-      },
-      editMenu: async (menuId: string, formData: FormData) => {
-        set({ loading: true });
-        try {
-          const response = await axios.put(
-            `${API_END_POINT}/${menuId}`,
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          );
+                  const newMenu = response.data.menu;
+                  set({ loading: false, menu: newMenu });
+                  
+                  // Refresh restaurant menus after creation
+                  await useRestaurantStore.getState().getRestaurantMenus(newMenu.restaurantId);
+                  
+                  toast.success("Menu created successfully!");
+              } catch (error: any) {
+                  set({ loading: false });
+                  const message =
+                      error.response?.data?.message ||
+                      error.message ||
+                      "An unexpected error occurred.";
+                  toast.error(message);
+                  throw error;
+              }
+          },
+          editMenu: async (menuId: string, formData: FormData) => {
+              set({ loading: true });
+              try {
+                  const response = await axios.put(
+                      `${API_END_POINT}/${menuId}`,
+                      formData,
+                      { headers: { "Content-Type": "multipart/form-data" } }
+                  );
 
-          if (!response.data.success) {
-            throw new Error(response.data.message);
-          }
+                  if (!response.data.success) {
+                      throw new Error(response.data.message);
+                  }
 
-          set({ loading: false, menu: response.data.menu });
-          useRestaurantStore.getState().updateMenuToRestaurant(response.data.menu);
-          toast.success(response.data.message);
-        } catch (error: any) {
-          set({ loading: false });
-          const message =
-            error.response?.data?.message || "An unexpected error occurred.";
-          toast.error(message);
-          throw error;
-        }
-      },
-    }),
-    {
-      name: "menu-name",
-      storage: createJSONStorage(() => localStorage),
-    }
+                  const updatedMenu = response.data.menu;
+                  set({ loading: false, menu: updatedMenu });
+                  
+                  // Refresh restaurant menus after update
+                  await useRestaurantStore.getState().getRestaurantMenus(updatedMenu.restaurantId);
+                  
+                  toast.success(response.data.message);
+              } catch (error: any) {
+                  set({ loading: false });
+                  const message =
+                      error.response?.data?.message || "An unexpected error occurred.";
+                  toast.error(message);
+                  throw error;
+              }
+          },
+      }),
+      {
+          name: "menu-name",
+          storage: createJSONStorage(() => localStorage),
+      }
   )
 );

@@ -2,7 +2,7 @@ import { Input } from "../components/ui/input";
 import { Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion"; // Import Framer Motion
+import { motion } from "framer-motion";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>("");
@@ -34,18 +34,33 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full">
-      <form
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-center justify-center min-h-screen w-full"
+    >
+      <motion.form
         onSubmit={handleSubmit}
         className="flex flex-col gap-5 md:p-8 w-full max-w-md rounded-lg mx-4 border border-gray-200 shadow-lg"
       >
-        <div className="text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
           <h1 className="font-extrabold text-2xl mb-2">Forgot Password</h1>
           <p className="text-sm text-gray-600">Enter your email address to reset your password</p>
-        </div>
+        </motion.div>
 
         {/* Email Input */}
-        <div className="relative w-full">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="relative w-full"
+        >
           <Input
             type="email"
             value={email}
@@ -55,11 +70,29 @@ const ForgotPassword = () => {
             required
           />
           <Mail className="absolute inset-y-2 left-2 text-gray-600 pointer-events-none" />
-        </div>
+        </motion.div>
 
         {/* Error and Success Messages */}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {success && <p className="text-sm text-green-600">{success}</p>}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-sm text-red-600"
+          >
+            {error}
+          </motion.p>
+        )}
+        {success && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-sm text-green-600"
+          >
+            {success}
+          </motion.p>
+        )}
 
         {/* Send Reset Link Button with Framer Motion Animation */}
         <motion.button
@@ -80,10 +113,12 @@ const ForgotPassword = () => {
 
         <span className="text-center">
           Back to{" "}
-          <Link to="/login" className="text-blue-500">Login</Link>
+          <Link to="/login" className="text-blue-500">
+            Login
+          </Link>
         </span>
-      </form>
-    </div>
+      </motion.form>
+    </motion.div>
   );
 };
 

@@ -1,5 +1,5 @@
 import { Minus, Plus } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
   Table,
@@ -14,6 +14,10 @@ import { useState } from "react";
 import CheckoutConfirmPage from "./CheckoutConfirmPage";
 import { useCartStore } from "../store/useCartStore";
 import { CartItem } from "../types/cartType";
+import { motion, AnimatePresence } from "framer-motion";
+import { staggerContainer, fadeIn } from "../lib/motion";
+
+const MotionButton = motion(Button); // Create a motion version of your Button
 
 const Cart = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -25,94 +29,159 @@ const Cart = () => {
     .toFixed(2);
 
   return (
-    <div className="flex flex-col max-w-7xl mx-auto my-10">
-      <div className="flex justify-end">
-        <Button
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col max-w-7xl mx-auto my-10"
+    >
+      <motion.div
+        initial={{ x: 20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="flex justify-end"
+      >
+        <MotionButton // Use MotionButton instead of Button
           onClick={clearCart}
-          className="text-red-500 hover:text-red-600 transition-all duration-300"
+          className="text-red-500 hover:text-red-600"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Clear All
-        </Button>
-      </div>
+        </MotionButton>
+      </motion.div>
 
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-200 dark:bg-gray-700">
-            <TableHead>Items</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead className="text-right">Remove</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {cart.map((item: CartItem) => (
-            <TableRow
-              key={item._id}
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
-            >
-              <TableCell>
-                <Avatar>
-                  <AvatarImage src={item.image} alt={item.name} />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </TableCell>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>₹{item.price.toFixed(2)}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-2">
-                  <Button
-                    onClick={() => decrementQuantity(item._id)}
-                    size="icon"
-                    variant="outline"
-                    className="rounded-full bg-gray-200 hover:scale-110 transition-all duration-300"
-                  >
-                    <Minus />
-                  </Button>
-                  <span className="font-bold">{item.quantity}</span>
-                  <Button
-                    onClick={() => incrementQuantity(item._id)}
-                    size="icon"
-                    className="rounded-full bg-orange hover:bg-hoverOrange hover:scale-110 transition-all duration-300"
-                    variant="outline"
-                  >
-                    <Plus />
-                  </Button>
-                </div>
-              </TableCell>
-              <TableCell>₹{(item.price * item.quantity).toFixed(2)}</TableCell>
-              <TableCell className="text-right">
-                <Button
-                  onClick={() => removeFromTheCart(item._id)}
-                  size="sm"
-                  className="bg-orange hover:bg-hoverOrange transition-all duration-300 hover:scale-105"
+      <motion.div
+        variants={staggerContainer()}
+        initial="hidden"
+        animate="show"
+      >
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-200 dark:bg-gray-700">
+              <TableHead>Items</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead className="text-right">Remove</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <AnimatePresence>
+              {cart.map((item: CartItem, index: number) => (
+                <motion.tr
+                  key={item._id}
+                  variants={fadeIn('right', 'spring', index * 0.05, 0.5)}
+                  initial="hidden"
+                  animate="show"
+                  exit={{ opacity: 0, x: -50 }}
+                  layout
+                  className="hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  Remove
-                </Button>
+                  <TableCell>
+                    <motion.div whileHover={{ scale: 1.1 }}>
+                      <Avatar>
+                        <AvatarImage src={item.image} alt={item.name} />
+                      </Avatar>
+                    </motion.div>
+                  </TableCell>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>₹{item.price.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <motion.div
+                      className="flex items-center gap-2 border border-gray-300 rounded-lg px-2"
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <MotionButton // Use MotionButton instead of Button
+                        onClick={() => decrementQuantity(item._id)}
+                        size="icon"
+                        variant="outline"
+                        className="rounded-full bg-gray-200"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Minus />
+                      </MotionButton>
+                      <motion.span
+                        className="font-bold"
+                        key={item.quantity}
+                        initial={{ scale: 1.2 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500 }}
+                      >
+                        {item.quantity}
+                      </motion.span>
+                      <MotionButton // Use MotionButton instead of Button
+                        onClick={() => incrementQuantity(item._id)}
+                        size="icon"
+                        className="rounded-full bg-orange hover:bg-hoverOrange"
+                        variant="outline"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Plus />
+                      </MotionButton>
+                    </motion.div>
+                  </TableCell>
+                  <TableCell>₹{(item.price * item.quantity).toFixed(2)}</TableCell>
+                  <TableCell className="text-right">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <MotionButton // Use MotionButton instead of Button
+                        onClick={() => removeFromTheCart(item._id)}
+                        size="sm"
+                        className="bg-orange hover:bg-hoverOrange"
+                      >
+                        Remove
+                      </MotionButton>
+                    </motion.div>
+                  </TableCell>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </TableBody>
+          <TableFooter>
+            <TableRow className="text-2xl font-bold">
+              <TableCell colSpan={5}>Total</TableCell>
+              <TableCell className="text-right">
+                <motion.div
+                  key={totalAmount}
+                  initial={{ scale: 1.2 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring" }}
+                >
+                  ₹{totalAmount}
+                </motion.div>
               </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow className="text-2xl font-bold">
-            <TableCell colSpan={5}>Total</TableCell>
-            <TableCell className="text-right">₹{totalAmount}</TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+          </TableFooter>
+        </Table>
+      </motion.div>
 
-      <div className="flex justify-end my-5">
-        <Button
-          onClick={() => setOpen(true)}
-          className="bg-orange hover:bg-hoverOrange transition-all duration-300 hover:scale-105"
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="flex justify-end my-5"
+      >
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          Proceed To Checkout
-        </Button>
-      </div>
+          <MotionButton // Use MotionButton instead of Button
+            onClick={() => setOpen(true)}
+            className="bg-orange hover:bg-hoverOrange"
+          >
+            Proceed To Checkout
+          </MotionButton>
+        </motion.div>
+      </motion.div>
 
       <CheckoutConfirmPage open={open} setOpen={setOpen} />
-    </div>
+    </motion.div>
   );
 };
 

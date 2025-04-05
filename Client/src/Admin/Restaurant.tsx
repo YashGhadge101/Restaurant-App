@@ -1,5 +1,3 @@
-// Restaurant.tsx
-
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -11,6 +9,7 @@ import { useRestaurantStore } from "../store/useRestaurantStore";
 import { Loader2 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Restaurant as RestaurantType, MenuItem } from "../types/restaurantType";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Restaurant = () => {
   const [input, setInput] = useState<RestaurantFormSchema>({
@@ -100,14 +99,38 @@ const Restaurant = () => {
     });
   };
 
+  const formItemVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1, // Staggered delay based on index
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
+  };
+
   return (
-    <div className="max-w-6xl mx-auto my-10">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-6xl mx-auto my-10"
+    >
       <div>
         <div>
           <h1 className="font-extrabold text-2xl mb-5">Add Restaurants</h1>
           <form onSubmit={submitHandler}>
             <div className="md:grid grid-cols-2 gap-6 space-y-2 md:space-y-0">
-              <div>
+              {/* Animated Input Fields */}
+              <motion.div
+                custom={0}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Label>Restaurant Name</Label>
                 <Input
                   type="text"
@@ -121,8 +144,13 @@ const Restaurant = () => {
                     {errors.restaurantName}
                   </span>
                 )}
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                custom={1}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Label>City</Label>
                 <Input
                   type="text"
@@ -136,8 +164,13 @@ const Restaurant = () => {
                     {errors.city}
                   </span>
                 )}
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                custom={2}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Label>Country</Label>
                 <Input
                   type="text"
@@ -151,8 +184,13 @@ const Restaurant = () => {
                     {errors.country}
                   </span>
                 )}
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                custom={3}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Label>Delivery Time</Label>
                 <Input
                   type="number"
@@ -166,8 +204,13 @@ const Restaurant = () => {
                     {errors.deliveryTime}
                   </span>
                 )}
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                custom={4}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Label>Cuisines</Label>
                 <Input
                   type="text"
@@ -183,8 +226,13 @@ const Restaurant = () => {
                     {errors.cuisines}
                   </span>
                 )}
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                custom={5}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Label>Upload Restaurant Banner</Label>
                 <Input
                   onChange={(e) =>
@@ -202,7 +250,7 @@ const Restaurant = () => {
                     {errors.imageFile?.name}
                   </span>
                 )}
-              </div>
+              </motion.div>
             </div>
             <div className="my-5 w-fit">
               {loading ? (
@@ -211,37 +259,54 @@ const Restaurant = () => {
                   Please wait
                 </Button>
               ) : (
-                <Button className="bg-orange hover:bg-hoverOrange">
-                  {editRestaurantId ? "Update Restaurant" : "Add Restaurant"}
-                </Button>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                  <Button className="bg-orange hover:bg-hoverOrange">
+                    {editRestaurantId ? "Update Restaurant" : "Add Restaurant"}
+                  </Button>
+                </motion.div>
               )}
             </div>
           </form>
 
           <div>
-            {restaurants.map((restaurant) => (
-              <div key={restaurant._id} className="border p-4 my-4">
-                <p>Name: {restaurant.restaurantName}</p>
-                <p>City: {restaurant.city}</p>
-                <Button onClick={() => editRestaurant(restaurant)}>Edit</Button>
-                {editRestaurantId === restaurant._id && restaurantMenus && (
-                  <div>
-                    <h3>Menus:</h3>
-                    <ul>
-                      {restaurantMenus.map((menu) => (
-                        <li key={menu._id}>
-                          {menu.name} - ${menu.price}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+            <AnimatePresence>
+              {restaurants.map((restaurant) => (
+                <motion.div
+                  key={restaurant._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="border p-4 my-4"
+                >
+                  <p>Name: {restaurant.restaurantName}</p>
+                  <p>City: {restaurant.city}</p>
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Button onClick={() => editRestaurant(restaurant)}>Edit</Button>
+                  </motion.div>
+                  {editRestaurantId === restaurant._id && restaurantMenus && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <h3>Menus:</h3>
+                      <ul>
+                        {restaurantMenus.map((menu) => (
+                          <li key={menu._id}>
+                            {menu.name} - ${menu.price}
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

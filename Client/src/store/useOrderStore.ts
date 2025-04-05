@@ -1,8 +1,9 @@
+// useOrderStore.ts
 import { CheckoutSessionRequest, OrderState } from "../types/orderType";
 import axios from "axios";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { toast } from "sonner"; // Import toast for better UI feedback
+import { toast } from "sonner";
 
 const API_END_POINT = "http://localhost:8000/api/v1/order";
 axios.defaults.withCredentials = true;
@@ -12,8 +13,6 @@ export const useOrderStore = create<OrderState>()(
     (set) => ({
       loading: false,
       orders: [],
-
-      // ✅ Create checkout session
       createCheckoutSession: async (checkoutSession: CheckoutSessionRequest) => {
         try {
           console.log("📤 Sending checkout session request:", checkoutSession);

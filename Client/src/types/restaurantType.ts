@@ -1,5 +1,3 @@
-// restaurantType.ts
-
 import { Orders } from "./orderType";
 
 export interface MenuItem {
@@ -34,20 +32,21 @@ export type RestaurantState = {
   searchedRestaurant: SearchedRestaurant | null;
   appliedFilter: string[];
   singleRestaurant: Restaurant | null;
-  restaurantOrder: Orders[];
+  restaurantOrders: Orders[];
   createRestaurant: (formData: FormData) => Promise<void>;
   getRestaurants: () => Promise<void>;
   updateRestaurant: (formData: FormData) => Promise<void>;
   searchRestaurant: (
     searchText: string,
     searchQuery: string,
-    selectedCuisines: any
+    selectedCuisines: string[]
   ) => Promise<void>;
   addMenuToRestaurant: (menu: MenuItem) => void;
   updateMenuToRestaurant: (menu: MenuItem) => void;
   setAppliedFilter: (value: string) => void;
   resetAppliedFilter: () => void;
-  getSingleRestaurant: (restaurantId: string) => Promise<Restaurant & { menus: MenuItem[] } | null>; // Corrected return type
+  getSingleRestaurant: (restaurantId: string) => Promise<Restaurant & { menus: MenuItem[] } | null>;
   getRestaurantOrders: () => Promise<void>;
-  updateRestaurantOrder: (orderId: string, status: string) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: string) => Promise<void>;
+  getRestaurantMenus: (restaurantId: string) => Promise<MenuItem[]>;
 };

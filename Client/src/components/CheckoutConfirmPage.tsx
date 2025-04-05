@@ -1,4 +1,10 @@
-import { Dispatch, FormEvent, SetStateAction, useState } from "react";
+import {
+  Dispatch,
+  FormEvent,
+  SetStateAction,
+  useState,
+  useEffect,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +21,7 @@ import { useCartStore } from "../store/useCartStore";
 import { useRestaurantStore } from "../store/useRestaurantStore";
 import { useOrderStore } from "../store/useOrderStore";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const CheckoutConfirmPage = ({
   open,
@@ -33,32 +40,54 @@ const CheckoutConfirmPage = ({
     country: user?.country || "",
   });
   const { cart } = useCartStore();
-  const { restaurant } = useRestaurantStore();
+  const { restaurant, getSingleRestaurant } = useRestaurantStore();
   const { createCheckoutSession, loading } = useOrderStore();
+
+  useEffect(() => {
+    if (cart.length > 0 && cart[0].restaurantId) {
+      getSingleRestaurant(cart[0].restaurantId);
+    }
+  }, [cart, getSingleRestaurant]);
+
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInput({ ...input, [name]: value });
   };
+
   const checkoutHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // api implementation start from here
+
+    console.log("Restaurant object:", restaurant); // Debugging log
+
+    if (!restaurant || !restaurant._id) {
+      toast.error("Restaurant details are missing. Please try again.");
+      return;
+    }
+
     try {
       const checkoutData: CheckoutSessionRequest = {
-        cartItems: cart.map((cartItem) => ({
-          menuId: cartItem._id,
-          name: cartItem.name,
-          image: cartItem.image,
-          price: cartItem.price.toString(),
-          quantity: cartItem.quantity.toString(),
-        })),
+        cartItems: cart
+          .filter((cartItem) => cartItem.image !== undefined)
+          .map((cartItem) => ({
+            menuId: cartItem._id,
+            name: cartItem.name,
+            image: cartItem.image as string,
+            price: cartItem.price.toString(),
+            quantity: cartItem.quantity.toString(),
+          })),
         deliveryDetails: input,
-        restaurantId: restaurant?._id as string,
+        restaurantId: restaurant._id,
       };
       await createCheckoutSession(checkoutData);
     } catch (error) {
       console.log(error);
+      toast.error("An error occurred during checkout.");
     }
   };
+
+  if (!restaurant) {
+    return <div>Loading...</div>; // Or some loading indicator.
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

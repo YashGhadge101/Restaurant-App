@@ -4,6 +4,7 @@ import { useUserStore } from "../store/useUserStore";
 import { Loader2 } from "lucide-react";
 import { FormEvent, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const VerifyEmail = () => {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -56,28 +57,58 @@ const VerifyEmail = () => {
     }
   };
 
+  const inputVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: (i: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delay: i * 0.1, // Staggered delay based on index
+        duration: 0.3,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
+  };
+
   return (
-    <div className="flex items-center justify-center h-screen w-full">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-center justify-center h-screen w-full"
+    >
       <div className="p-8 rounded-md w-full max-w-md flex flex-col gap-10 border border-gray-200">
-        <div className="text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
           <h1 className="font-extrabold text-2xl">Verify your email</h1>
           <p className="text-sm text-gray-600">
             Enter the 6-digit code sent to your email address
           </p>
-        </div>
+        </motion.div>
         <form onSubmit={submitHandler}>
           <div className="flex justify-between">
             {otp.map((digit, idx) => (
-              <Input
+              <motion.div
                 key={idx}
-                ref={(el) => (inputRef.current[idx] = el)}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(idx, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(idx, e)}
-                className="md:w-12 md:h-12 w-8 h-8 text-center text-sm md:text-2xl font-normal md:font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+                custom={idx}
+                variants={inputVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <Input
+                  ref={(el) => (inputRef.current[idx] = el)}
+                  type="text"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(idx, e)}
+                  className="md:w-12 md:h-12 w-8 h-8 text-center text-sm md:text-2xl font-normal md:font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </motion.div>
             ))}
           </div>
           <Button
@@ -95,7 +126,7 @@ const VerifyEmail = () => {
           </Button>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

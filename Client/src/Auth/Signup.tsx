@@ -5,7 +5,7 @@ import { useUserStore } from "../store/useUserStore";
 import { Loader2, LockKeyhole, Mail, PhoneOutgoing, User } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // Import Framer Motion
+import { motion } from "framer-motion";
 
 const Signup = () => {
   const [input, setInput] = useState<SignupInputState>({
@@ -50,18 +50,47 @@ const Signup = () => {
     }
   };
 
+  const formItemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.1, // Staggered delay based on index
+        duration: 0.3,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <form 
-        onSubmit={signupSubmitHandler} 
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-center justify-center min-h-screen"
+    >
+      <motion.form
+        onSubmit={signupSubmitHandler}
         className="md:p-8 w-full max-w-md rounded-lg md:border border-gray-200 mx-4"
       >
-        <div className="mb-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-4 text-center"
+        >
           <h1 className="font-bold text-2xl">𝕋𝕒𝕤𝕥𝕖 & 𝕋𝕨𝕚𝕤𝕥</h1>
-        </div>
+        </motion.div>
 
         {/* Full Name Input */}
-        <div className="mb-4 relative">
+        <motion.div
+          custom={0}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+          className="mb-4 relative"
+        >
           <Input
             type="text"
             placeholder="Full Name"
@@ -73,10 +102,16 @@ const Signup = () => {
           />
           <User className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
           {errors.fullname && <span className="text-xs text-red-500">{errors.fullname}</span>}
-        </div>
+        </motion.div>
 
         {/* Email Input */}
-        <div className="mb-4 relative">
+        <motion.div
+          custom={1}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+          className="mb-4 relative"
+        >
           <Input
             type="email"
             placeholder="Email"
@@ -88,10 +123,16 @@ const Signup = () => {
           />
           <Mail className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
           {errors.email && <span className="text-xs text-red-500">{errors.email}</span>}
-        </div>
+        </motion.div>
 
         {/* Password Input */}
-        <div className="mb-4 relative">
+        <motion.div
+          custom={2}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+          className="mb-4 relative"
+        >
           <Input
             type="password"
             placeholder="Password"
@@ -103,10 +144,16 @@ const Signup = () => {
           />
           <LockKeyhole className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
           {errors.password && <span className="text-xs text-red-500">{errors.password}</span>}
-        </div>
+        </motion.div>
 
         {/* Contact Input */}
-        <div className="mb-4 relative">
+        <motion.div
+          custom={3}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+          className="mb-4 relative"
+        >
           <Input
             type="text"
             placeholder="Contact"
@@ -118,10 +165,19 @@ const Signup = () => {
           />
           <PhoneOutgoing className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
           {errors.contact && <span className="text-xs text-red-500">{errors.contact}</span>}
-        </div>
+        </motion.div>
 
         {/* Display Server Error */}
-        {serverError && <p className="text-sm text-red-500">{serverError}</p>}
+        {serverError && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-sm text-red-500"
+          >
+            {serverError}
+          </motion.p>
+        )}
 
         {/* Signup Button with Framer Motion Animation */}
         <div className="mb-10">
@@ -144,12 +200,19 @@ const Signup = () => {
 
         <Separator />
 
-        <p className="mt-2 text-center">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="mt-2 text-center"
+        >
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-500">Login</Link>
-        </p>
-      </form>
-    </div>
+          <Link to="/login" className="text-blue-500">
+            Login
+          </Link>
+        </motion.p>
+      </motion.form>
+    </motion.div>
   );
 };
 

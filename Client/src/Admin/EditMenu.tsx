@@ -20,6 +20,43 @@ import {
   useEffect,
   useState,
 } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Animation variants
+const dialogContentVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: { duration: 0.3 }
+  }
+};
+
+const formItemVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  })
+};
+
+const buttonHoverVariants = {
+  hover: { scale: 1.03 },
+  tap: { scale: 0.98 }
+};
 
 const EditMenu = ({
   selectedMenu,
@@ -69,96 +106,155 @@ const EditMenu = ({
   };
 
   useEffect(() => {
-    setInput({
-      name: selectedMenu?.name || "",
-      description: selectedMenu?.description || "",
-      price: selectedMenu?.price || 0,
-      image: undefined,
-    });
-  }, [selectedMenu]);
+    if (selectedMenu && editOpen) {
+      setInput({
+        name: selectedMenu.name || "",
+        description: selectedMenu.description || "",
+        price: selectedMenu.price || 0,
+        image: undefined,
+      });
+    }
+  }, [selectedMenu, editOpen]);
 
   return (
     <Dialog open={editOpen} onOpenChange={setEditOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Menu</DialogTitle>
-          <DialogDescription>
-            Update your menu to keep your offerings fresh and exciting!
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submitHandler} className="space-y-4">
-          <div>
-            <Label>Name</Label>
-            <Input
-              type="text"
-              name="name"
-              value={input.name}
-              onChange={changeEventHandler}
-              placeholder="Enter menu name"
-            />
-            {error && (
-              <span className="text-xs font-medium text-red-600">
-                {error.name}
-              </span>
-            )}
-          </div>
-          <div>
-            <Label>Description</Label>
-            <Input
-              type="text"
-              name="description"
-              value={input.description}
-              onChange={changeEventHandler}
-              placeholder="Enter menu description"
-            />
-            {error && (
-              <span className="text-xs font-medium text-red-600">
-                {error.description}
-              </span>
-            )}
-          </div>
-          <div>
-            <Label>Price in (Rupees)</Label>
-            <Input
-              type="number"
-              name="price"
-              value={input.price}
-              onChange={changeEventHandler}
-              placeholder="Enter menu price"
-            />
-            {error && (
-              <span className="text-xs font-medium text-red-600">
-                {error.price}
-              </span>
-            )}
-          </div>
-          <div>
-            <Label>Upload Menu Image</Label>
-            <Input
-              type="file"
-              name="image"
-              onChange={(e) =>
-                setInput({ ...input, image: e.target.files?.[0] || undefined })
-              }
-            />
-            {error && (
-              <span className="text-xs font-medium text-red-600">
-                {error.image?.name}
-              </span>
-            )}
-          </div>
-          <DialogFooter className="mt-5">
-            {loading ? (
-              <Button disabled className="bg-orange hover:bg-hoverOrange">
-                <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                Please wait
-              </Button>
-            ) : (
-              <Button className="bg-orange hover:bg-hoverOrange">Submit</Button>
-            )}
-          </DialogFooter>
-        </form>
-      </DialogContent>
+      <AnimatePresence>
+        {editOpen && (
+          <DialogContent forceMount className="overflow-hidden">
+            <motion.div
+              variants={dialogContentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="space-y-4"
+            >
+              <DialogHeader>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <DialogTitle>Edit Menu</DialogTitle>
+                  <DialogDescription>
+                    Update your menu to keep your offerings fresh and exciting!
+                  </DialogDescription>
+                </motion.div>
+              </DialogHeader>
+
+              <form onSubmit={submitHandler} className="space-y-4">
+                {/* Form fields with pre-populated values */}
+                <motion.div
+                  custom={0}
+                  variants={formItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <Label>Name</Label>
+                  <Input
+                    type="text"
+                    name="name"
+                    value={input.name}
+                    onChange={changeEventHandler}
+                    placeholder="Enter menu name"
+                  />
+                  {error && (
+                    <span className="text-xs font-medium text-red-600">
+                      {error.name}
+                    </span>
+                  )}
+                </motion.div>
+
+                <motion.div
+                  custom={1}
+                  variants={formItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <Label>Description</Label>
+                  <Input
+                    type="text"
+                    name="description"
+                    value={input.description}
+                    onChange={changeEventHandler}
+                    placeholder="Enter menu description"
+                  />
+                  {error && (
+                    <span className="text-xs font-medium text-red-600">
+                      {error.description}
+                    </span>
+                  )}
+                </motion.div>
+
+                <motion.div
+                  custom={2}
+                  variants={formItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <Label>Price in (Rupees)</Label>
+                  <Input
+                    type="number"
+                    name="price"
+                    value={input.price}
+                    onChange={changeEventHandler}
+                    placeholder="Enter menu price"
+                  />
+                  {error && (
+                    <span className="text-xs font-medium text-red-600">
+                      {error.price}
+                    </span>
+                  )}
+                </motion.div>
+
+                <motion.div
+                  custom={3}
+                  variants={formItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <Label>Upload Menu Image</Label>
+                  <Input
+                    type="file"
+                    name="image"
+                    onChange={(e) =>
+                      setInput({ ...input, image: e.target.files?.[0] || undefined })
+                    }
+                  />
+                  {error && (
+                    <span className="text-xs font-medium text-red-600">
+                      {error.image?.name}
+                    </span>
+                  )}
+                </motion.div>
+
+                <DialogFooter className="mt-5">
+                  {loading ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <Button disabled className="bg-orange hover:bg-hoverOrange">
+                        <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                        Please wait
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      variants={buttonHoverVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      <Button className="bg-orange hover:bg-hoverOrange">
+                        Submit
+                      </Button>
+                    </motion.div>
+                  )}
+                </DialogFooter>
+              </form>
+            </motion.div>
+          </DialogContent>
+        )}
+      </AnimatePresence>
     </Dialog>
   );
 };
