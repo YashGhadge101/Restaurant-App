@@ -21,26 +21,35 @@ interface AddMenuRequest {
     name: string;
     description: string;
     price: string;
+    restaurantId?: string; // ADDED THIS TO SUPPORT ADMIN-SIDE CREATION
 }
 
+// ✅ ADD MENU (ADMIN OR USER)
 export const addMenu = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, description, price }: AddMenuRequest = req.body;
+        const { name, description, price, restaurantId }: AddMenuRequest = req.body;
         const file = req.file;
 
         if (!name || !description || !price || !file) {
             res.status(400).json({
                 success: false,
-                message: "Name, description, price, and image are required.",
+                message: "Name, description, price, image, and restaurantId are required.",
             });
             return;
         }
 
-        const restaurant = await Restaurant.findOne({ user: req.id }) as IRestaurantDocument;
-        if (!restaurant) {
+        let finalRestaurant: IRestaurantDocument | null = null;
+
+        if (restaurantId) {
+            finalRestaurant = await Restaurant.findById(restaurantId);
+        } else {
+            finalRestaurant = await Restaurant.findOne({ user: req.id });
+        }
+
+        if (!finalRestaurant) {
             res.status(404).json({
                 success: false,
-                message: "Restaurant not found for the logged-in user.",
+                message: "Restaurant not found.",
             });
             return;
         }
@@ -52,11 +61,11 @@ export const addMenu = async (req: Request, res: Response): Promise<void> => {
             description,
             price: Number(price),
             image: imageUrl,
-            restaurantId: restaurant._id,
-        }) as IMenuDocument;
+            restaurantId: finalRestaurant._id,
+        });
 
-        restaurant.menus.push(createdMenu._id);
-        await restaurant.save();
+        finalRestaurant.menus.push(createdMenu._id);
+        await finalRestaurant.save();
 
         res.status(201).json({
             success: true,
@@ -72,6 +81,7 @@ export const addMenu = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+// ✅ CREATE MENU (EXPLICIT RESTAURANT SELECTION)
 export const createMenu = async (req: Request, res: Response): Promise<void> => {
     try {
         const { name, description, price, restaurantId }: CreateMenuRequest = req.body;
@@ -84,18 +94,21 @@ export const createMenu = async (req: Request, res: Response): Promise<void> => 
 
         let finalRestaurantId: string;
 
-        if (restaurantId && typeof restaurantId === 'string') {
+        if (restaurantId && typeof restaurantId === "string") {
             finalRestaurantId = restaurantId;
         } else {
-            const restaurant:any = await Restaurant.findOne({ user: req.id }) as IRestaurantDocument;
+            const restaurant:any = await Restaurant.findOne({ user: req.id });
             if (!restaurant) {
-                res.status(404).json({ success: false, message: "Restaurant not found for the logged-in user." });
+                res.status(404).json({
+                    success: false,
+                    message: "Restaurant not found for the logged-in user.",
+                });
                 return;
             }
             finalRestaurantId = restaurant._id.toString();
         }
 
-        const restaurantExists = await Restaurant.findById(new mongoose.Types.ObjectId(finalRestaurantId)) as IRestaurantDocument;
+        const restaurantExists = await Restaurant.findById(new mongoose.Types.ObjectId(finalRestaurantId));
         if (!restaurantExists) {
             res.status(404).json({ success: false, message: "Restaurant not found." });
             return;
@@ -109,7 +122,7 @@ export const createMenu = async (req: Request, res: Response): Promise<void> => 
             price: Number(price),
             image: imageUrl,
             restaurantId: finalRestaurantId,
-        }) as IMenuDocument;
+        });
 
         restaurantExists.menus.push(createdMenu._id);
         await restaurantExists.save();
@@ -121,6 +134,7 @@ export const createMenu = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
+// ✅ EDIT MENU
 export const editMenu = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;

@@ -11,41 +11,61 @@ import { staggerContainer, fadeIn, cardVariants } from "../lib/motion";
 interface AvailableMenuProps {
   menus: MenuItem[];
   isLoading?: boolean;
+  navigateToCart?: boolean;
 }
 
-const AvailableMenu = ({ menus, isLoading = false }: AvailableMenuProps) => {
+const AvailableMenu = ({ menus, isLoading = false, navigateToCart = true }: AvailableMenuProps) => {
   const { addToCart } = useCartStore();
   const navigate = useNavigate();
 
   const handleAddToCart = (menu: MenuItem) => {
     addToCart(menu);
     toast.success(`${menu.name} added to cart!`);
-    navigate("/cart");
+    if (navigateToCart) {
+      navigate("/cart");
+    }
   };
 
   if (isLoading) {
     return (
-      <motion.div 
-        className="grid md:grid-cols-3 gap-4"
-        variants={staggerContainer()}
-        initial="hidden"
-        animate="show"
-      >
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={`skeleton-${i}`}
-            variants={fadeIn('up', 'spring', i * 0.1, 0.5)}
-          >
+      <div className="grid md:grid-cols-3 gap-4 relative">
+        {menus.map((_, i) => (
+          <div key={`placeholder-${i}`} className="opacity-0">
             <Card>
-              <Skeleton className="h-40 w-full" />
+              <img src="/fallback-image.jpg" alt="placeholder" className="h-40 w-full object-cover" />
               <CardContent className="space-y-2">
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[180px]" />
+                <h2 className="text-xl font-semibold">Placeholder</h2>
+                <p className="text-sm">Placeholder description</p>
+                <h3 className="text-lg font-semibold">Price: ₹0.00</h3>
               </CardContent>
+              <CardFooter>
+                <Button className="w-full">Add to Cart</Button>
+              </CardFooter>
             </Card>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+        <motion.div
+          className="absolute inset-0 grid md:grid-cols-3 gap-4"
+          variants={staggerContainer()}
+          initial="hidden"
+          animate="show"
+        >
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={`skeleton-${i}`}
+              variants={fadeIn('up', 'spring', i * 0.1, 0.5)}
+            >
+              <Card>
+                <Skeleton className="h-40 w-full" />
+                <CardContent className="space-y-2">
+                  <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-4 w-[180px]" />
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
     );
   }
 
@@ -64,7 +84,7 @@ const AvailableMenu = ({ menus, isLoading = false }: AvailableMenuProps) => {
 
   return (
     <div className="md:p-4">
-      <motion.h1 
+      <motion.h1
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -72,7 +92,7 @@ const AvailableMenu = ({ menus, isLoading = false }: AvailableMenuProps) => {
       >
         Available Menus
       </motion.h1>
-      
+
       <motion.div
         variants={staggerContainer()}
         initial="hidden"
@@ -89,26 +109,28 @@ const AvailableMenu = ({ menus, isLoading = false }: AvailableMenuProps) => {
               layout
             >
               <Card className="max-w-xs mx-auto shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <motion.img 
-                  src={menu.image || '/fallback-image.jpg'} 
+                <motion.img
+                  src={menu.image || '/fallback-image.jpg'}
                   alt={menu.name}
+                  aria-label={`Image of ${menu.name}`}
                   className="w-full h-40 object-cover"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
                   onError={(e) => {
+                    console.error(`Failed to load image for ${menu.name}:`, e);
                     (e.target as HTMLImageElement).src = '/fallback-image.jpg';
                   }}
                 />
                 <CardContent className="p-4">
-                  <motion.h2 
+                  <motion.h2
                     className="text-xl font-semibold text-gray-800 dark:text-white"
                     whileHover={{ color: "#D19254" }}
                     transition={{ duration: 0.2 }}
                   >
                     {menu.name}
                   </motion.h2>
-                  <motion.p 
+                  <motion.p
                     className="text-sm text-gray-600 mt-2 line-clamp-2"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -116,7 +138,7 @@ const AvailableMenu = ({ menus, isLoading = false }: AvailableMenuProps) => {
                   >
                     {menu.description || "No description available"}
                   </motion.p>
-                  <motion.h3 
+                  <motion.h3
                     className="text-lg font-semibold mt-4"
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}

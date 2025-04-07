@@ -225,17 +225,7 @@ export const useRestaurantStore = create<RestaurantState>()(
         try {
           const response = await axios.get(`${API_END_POINT}/${restaurantId}/menus`);
           if (response.data.success) {
-            set((state) => ({
-              singleRestaurant: state.singleRestaurant?._id === restaurantId
-                ? { ...state.singleRestaurant, menus: response.data.menus }
-                : state.singleRestaurant,
-              restaurants: state.restaurants.map(restaurant =>
-                restaurant._id === restaurantId
-                  ? { ...restaurant, menus: response.data.menus }
-                  : restaurant
-              ),
-              loading: false,
-            }));
+            set({ loading: false });
             return response.data.menus as MenuItem[];
           }
           return [];

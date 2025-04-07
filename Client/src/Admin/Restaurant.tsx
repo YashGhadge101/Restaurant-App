@@ -22,7 +22,9 @@ const Restaurant = () => {
   });
   const [errors, setErrors] = useState<Partial<RestaurantFormSchema>>({});
   const [editRestaurantId, setEditRestaurantId] = useState<string | null>(null);
-  const [restaurantMenus, setRestaurantMenus] = useState<MenuItem[] | null>(null);
+  const [restaurantMenusMap, setRestaurantMenusMap] = useState<
+    Record<string, MenuItem[]>
+  >({});
 
   const {
     loading,
@@ -31,6 +33,7 @@ const Restaurant = () => {
     createRestaurant,
     getRestaurants,
     getSingleRestaurant,
+    getRestaurantMenus,
   } = useRestaurantStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +66,6 @@ const Restaurant = () => {
         formData.append("restaurantId", editRestaurantId);
         await updateRestaurant(formData);
         setEditRestaurantId(null);
-        setRestaurantMenus(null);
       } else {
         await createRestaurant(formData);
       }
@@ -85,10 +87,27 @@ const Restaurant = () => {
     getRestaurants();
   }, []);
 
+  useEffect(() => {
+    const fetchMenus = async () => {
+      const menusMap: Record<string, MenuItem[]> = {};
+      for (const restaurant of restaurants) {
+        const menus = await getRestaurantMenus(restaurant._id);
+        if (menus) {
+          menusMap[restaurant._id] = menus;
+        }
+      }
+      setRestaurantMenusMap(menusMap);
+    };
+
+    if (restaurants.length > 0) {
+      fetchMenus();
+    }
+  }, [restaurants, getRestaurantMenus]);
+
   const editRestaurant = async (restaurant: RestaurantType) => {
     setEditRestaurantId(restaurant._id);
     const response = await getSingleRestaurant(restaurant._id);
-    setRestaurantMenus(response?.menus || null);
+    setRestaurantMenusMap({ [restaurant._id]: response?.menus || [] });
     setInput({
       restaurantName: restaurant.restaurantName || "",
       city: restaurant.city || "",
@@ -105,7 +124,7 @@ const Restaurant = () => {
       opacity: 1,
       y: 0,
       transition: {
-        delay: i * 0.1, // Staggered delay based on index
+        delay: i * 0.1,
         duration: 0.4,
         ease: [0.22, 1, 0.36, 1],
       },
@@ -124,7 +143,6 @@ const Restaurant = () => {
           <h1 className="font-extrabold text-2xl mb-5">Add Restaurants</h1>
           <form onSubmit={submitHandler}>
             <div className="md:grid grid-cols-2 gap-6 space-y-2 md:space-y-0">
-              {/* Animated Input Fields */}
               <motion.div
                 custom={0}
                 variants={formItemVariants}
@@ -284,7 +302,7 @@ const Restaurant = () => {
                   <motion.div whileHover={{ scale: 1.05 }}>
                     <Button onClick={() => editRestaurant(restaurant)}>Edit</Button>
                   </motion.div>
-                  {editRestaurantId === restaurant._id && restaurantMenus && (
+                  {restaurantMenusMap[restaurant._id] && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -292,7 +310,7 @@ const Restaurant = () => {
                     >
                       <h3>Menus:</h3>
                       <ul>
-                        {restaurantMenus.map((menu) => (
+                        {restaurantMenusMap[restaurant._id].map((menu) => (
                           <li key={menu._id}>
                             {menu.name} - ${menu.price}
                           </li>

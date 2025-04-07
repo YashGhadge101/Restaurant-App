@@ -1,4 +1,3 @@
-// restaurant.controller.ts
 import { Request, Response } from "express";
 import { Restaurant } from "../models/restaurant.model";
 import uploadImageOnCloudinary from "../Utils/imageUpload";
@@ -13,6 +12,8 @@ export const createRestaurant = async (
   try {
     const { restaurantName, city, country, deliveryTime, cuisines } = req.body;
     const file = req.file;
+
+    // Removed the duplicate restaurant check here!
 
     if (!file) {
       res.status(400).json({
@@ -70,47 +71,49 @@ export const updateRestaurant = async (
   res: Response
 ): Promise<void> => {
   try {
-    const {
-      restaurantName,
-      city,
-      country,
-      deliveryTime,
-      cuisines,
-      restaurantId,
-    } = req.body;
-    const file = req.file;
+      console.log("Request Params:", req.params);
+      console.log("Request Body:", req.body);
+      const {
+          restaurantName,
+          city,
+          country,
+          deliveryTime,
+          cuisines,
+          restaurantId,
+      } = req.body;
+      const file = req.file;
 
-    const restaurant = await Restaurant.findById(restaurantId);
+      const restaurant = await Restaurant.findById(restaurantId);
 
-    if (!restaurant) {
-      res.status(404).json({
-        success: false,
-        message: "Restaurant not found",
+      if (!restaurant) {
+          res.status(404).json({
+              success: false,
+              message: "Restaurant not found",
+          });
+          return;
+      }
+
+      restaurant.restaurantName = restaurantName;
+      restaurant.city = city;
+      restaurant.country = country;
+      restaurant.deliveryTime = deliveryTime;
+      restaurant.cuisines = JSON.parse(cuisines);
+
+      if (file) {
+          const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
+          restaurant.imageUrl = imageUrl;
+      }
+
+      await restaurant.save();
+
+      res.status(200).json({
+          success: true,
+          message: "Restaurant updated",
+          restaurant,
       });
-      return;
-    }
-
-    restaurant.restaurantName = restaurantName;
-    restaurant.city = city;
-    restaurant.country = country;
-    restaurant.deliveryTime = deliveryTime;
-    restaurant.cuisines = JSON.parse(cuisines);
-
-    if (file) {
-      const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
-      restaurant.imageUrl = imageUrl;
-    }
-
-    await restaurant.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Restaurant updated",
-      restaurant,
-    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -119,37 +122,38 @@ export const getRestaurantMenus = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { restaurantId } = req.params;
+      const { restaurantId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid restaurant ID format.",
+      if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+          res.status(400).json({ 
+              success: false, 
+              message: "Invalid restaurant ID format." 
+          });
+          return;
+      }
+
+      const restaurant = await Restaurant.findById(restaurantId);
+      if (!restaurant) {
+          res.status(404).json({ 
+              success: false, 
+              message: "Restaurant not found." 
+          });
+          return;
+      }
+
+      const menus = await Menu.find({ restaurantId })
+          .sort({ createdAt: -1 });
+
+      res.status(200).json({ 
+          success: true, 
+          menus 
       });
-      return;
-    }
-
-    const restaurant = await Restaurant.findById(restaurantId);
-    if (!restaurant) {
-      res.status(404).json({
-        success: false,
-        message: "Restaurant not found.",
-      });
-      return;
-    }
-
-    const menus = await Menu.find({ restaurantId }).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      menus,
-    });
   } catch (error) {
-    console.error("Error fetching menus:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+      console.error("Error fetching menus:", error);
+      res.status(500).json({ 
+          success: false, 
+          message: "Internal server error" 
+      });
   }
 };
 
@@ -256,7 +260,7 @@ export const getSingleRestaurant = async (
     const restaurantId = req.params.id;
     const restaurant = await Restaurant.findById(restaurantId).populate({
       path: "menus",
-      model: "Menu",
+      model: "Menu", // Explicitly specify the Menu model
       options: { createdAt: -1 },
     });
     if (!restaurant) {

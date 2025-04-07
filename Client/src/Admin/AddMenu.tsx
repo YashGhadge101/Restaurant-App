@@ -16,7 +16,9 @@ import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "../Schema/menuSchema";
 import { useMenuStore } from "../store/useMenuStore";
 import { useRestaurantStore } from "../store/useRestaurantStore";
+import { useUserStore } from "../store/useUserStore";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner"; // ✅ Toast import
 
 // Animation variants
 const menuItemVariants = {
@@ -27,14 +29,14 @@ const menuItemVariants = {
     transition: {
       delay: i * 0.1,
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1]
-    }
+      ease: [0.22, 1, 0.36, 1],
+    },
   }),
   hover: {
     scale: 1.02,
     boxShadow: "0px 5px 15px rgba(0,0,0,0.1)",
-    transition: { duration: 0.3, ease: "easeOut" }
-  }
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
 };
 
 const dialogContentVariants = {
@@ -44,24 +46,24 @@ const dialogContentVariants = {
     y: 0,
     transition: {
       duration: 0.4,
-      ease: [0.22, 1, 0.36, 1]
-    }
+      ease: [0.22, 1, 0.36, 1],
+    },
   },
   exit: {
     opacity: 0,
     y: 20,
-    transition: { duration: 0.3 }
-  }
+    transition: { duration: 0.3 },
+  },
 };
 
 const buttonHoverVariants = {
   hover: {
     scale: 1.05,
-    transition: { duration: 0.2 }
+    transition: { duration: 0.2 },
   },
   tap: {
-    scale: 0.98
-  }
+    scale: 0.98,
+  },
 };
 
 const AddMenu = () => {
@@ -75,8 +77,19 @@ const AddMenu = () => {
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<any>(null);
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
+
   const { loading, createMenu } = useMenuStore();
   const { restaurant } = useRestaurantStore();
+  const { user } = useUserStore();
+
+  // ✅ Block non-admins from accessing AddMenu page entirely
+  if (!user?.admin) {
+    return (
+      <div className="text-center mt-20 text-lg font-semibold text-red-600">
+        🚫 You are not authorized to view this page.
+      </div>
+    );
+  }
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -122,14 +135,14 @@ const AddMenu = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="max-w-6xl mx-auto my-10"
     >
       <div className="flex justify-between">
-        <motion.h1 
+        <motion.h1
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -137,141 +150,107 @@ const AddMenu = () => {
         >
           Available Menus
         </motion.h1>
-        
+
         <Dialog open={open} onOpenChange={setOpen}>
-  <DialogTrigger asChild>
-    <motion.div
-      variants={buttonHoverVariants}
-      whileHover="hover"
-      whileTap="tap"
-    >
-      <Button className="bg-orange hover:bg-hoverOrange">
-        <Plus className="mr-2" />
-        Add Menus
-      </Button>
-    </motion.div>
-  </DialogTrigger>
-  
-  <AnimatePresence>
-    {open && (
-      <DialogContent forceMount>
-        <motion.div
-          variants={dialogContentVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          <DialogHeader>
-            <DialogTitle>Add A New Menu</DialogTitle>
-            <DialogDescription>
-              Create a menu that will make your restaurant stand out.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={submitHandler} className="space-y-4">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      <Label>Name</Label>
-                      <Input
-                        type="text"
-                        name="name"
-                        value={input.name}
-                        onChange={changeEventHandler}
-                        placeholder="Enter menu name"
-                      />
-                      {error && (
-                        <span className="text-xs font-medium text-red-600">
-                          {error.name}
-                        </span>
-                      )}
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      <Label>Description</Label>
-                      <Input
-                        type="text"
-                        name="description"
-                        value={input.description}
-                        onChange={changeEventHandler}
-                        placeholder="Enter menu description"
-                      />
-                      {error && (
-                        <span className="text-xs font-medium text-red-600">
-                          {error.description}
-                        </span>
-                      )}
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <Label>Price in (Rupees)</Label>
-                      <Input
-                        type="number"
-                        name="price"
-                        value={input.price}
-                        onChange={changeEventHandler}
-                        placeholder="Enter menu price"
-                      />
-                      {error && (
-                        <span className="text-xs font-medium text-red-600">
-                          {error.price}
-                        </span>
-                      )}
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      <Label>Upload Menu Image</Label>
-                      <Input
-                        type="file"
-                        name="image"
-                        onChange={(e) =>
-                          setInput({
-                            ...input,
-                            image: e.target.files?.[0] || undefined,
-                          })
-                        }
-                      />
-                      {error && (
-                        <span className="text-xs font-medium text-red-600">
-                          {error.image?.name}
-                        </span>
-                      )}
-                    </motion.div>
-                    
+          <DialogTrigger asChild>
+            <motion.div
+              variants={buttonHoverVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Button className="bg-orange hover:bg-hoverOrange">
+                <Plus className="mr-2" />
+                Add Menus
+              </Button>
+            </motion.div>
+          </DialogTrigger>
+
+          <AnimatePresence>
+            {open && (
+              <DialogContent forceMount>
+                <motion.div
+                  variants={dialogContentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                >
+                  <DialogHeader>
+                    <DialogTitle>Add A New Menu</DialogTitle>
+                    <DialogDescription>
+                      Create a menu that will make your restaurant stand out.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={submitHandler} className="space-y-4">
+                    <Label>Name</Label>
+                    <Input
+                      type="text"
+                      name="name"
+                      value={input.name}
+                      onChange={changeEventHandler}
+                      placeholder="Enter menu name"
+                    />
+                    {error.name && (
+                      <span className="text-xs font-medium text-red-600">
+                        {error.name}
+                      </span>
+                    )}
+
+                    <Label>Description</Label>
+                    <Input
+                      type="text"
+                      name="description"
+                      value={input.description}
+                      onChange={changeEventHandler}
+                      placeholder="Enter menu description"
+                    />
+                    {error.description && (
+                      <span className="text-xs font-medium text-red-600">
+                        {error.description}
+                      </span>
+                    )}
+
+                    <Label>Price in (Rupees)</Label>
+                    <Input
+                      type="number"
+                      name="price"
+                      value={input.price}
+                      onChange={changeEventHandler}
+                      placeholder="Enter menu price"
+                    />
+                    {error.price && (
+                      <span className="text-xs font-medium text-red-600">
+                        {error.price}
+                      </span>
+                    )}
+
+                    <Label>Upload Menu Image</Label>
+                    <Input
+                      type="file"
+                      name="image"
+                      onChange={(e) =>
+                        setInput({
+                          ...input,
+                          image: e.target.files?.[0] || undefined,
+                        })
+                      }
+                    />
+                    {error.image?.name && (
+                      <span className="text-xs font-medium text-red-600">
+                        {error.image.name}
+                      </span>
+                    )}
+
                     <DialogFooter className="mt-5">
                       {loading ? (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                        >
-                          <Button disabled className="bg-orange hover:bg-hoverOrange">
-                            <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                            Please wait
-                          </Button>
-                        </motion.div>
+                        <Button disabled className="bg-orange hover:bg-hoverOrange">
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                          Please wait
+                        </Button>
                       ) : (
-                        <motion.div
-                          variants={buttonHoverVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          <Button className="bg-orange hover:bg-hoverOrange">
-                            Submit
-                          </Button>
-                        </motion.div>
+                        <Button className="bg-orange hover:bg-hoverOrange">
+                          Submit
+                        </Button>
                       )}
                     </DialogFooter>
                   </form>
@@ -281,7 +260,7 @@ const AddMenu = () => {
           </AnimatePresence>
         </Dialog>
       </div>
-      
+
       <div className="grid gap-4 mt-6">
         {restaurant?.menus?.map((menu: any, idx: number) => (
           <motion.div
@@ -309,12 +288,13 @@ const AddMenu = () => {
                 Price: <span className="text-[#D19254]">{menu.price}</span>
               </h2>
             </div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={() => {
+                  if (!user?.admin) {
+                    toast.error("Only admins can edit the menu.");
+                    return;
+                  }
                   setSelectedMenu(menu);
                   setEditOpen(true);
                 }}
@@ -327,7 +307,7 @@ const AddMenu = () => {
           </motion.div>
         )) ?? null}
       </div>
-      
+
       <EditMenu
         selectedMenu={selectedMenu}
         editOpen={editOpen}
