@@ -1,4 +1,3 @@
-import { Orders } from "../types/orderType";
 import { MenuItem, RestaurantState, Restaurant } from "../types/restaurantType";
 import axios from "axios";
 import { toast } from "sonner";
@@ -10,7 +9,7 @@ axios.defaults.withCredentials = true;
 
 export const useRestaurantStore = create<RestaurantState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       loading: false,
       restaurants: [],
       searchedRestaurant: null,
@@ -192,25 +191,39 @@ export const useRestaurantStore = create<RestaurantState>()(
       getRestaurantOrders: async () => {
         set({ loading: true });
         try {
-          const { data } = await axios.get(`${API_END_POINT}/orders`);
+          const { data } = await axios.get(`${API_END_POINT}/restaurant/order`);
           set({ restaurantOrders: data.orders });
           console.log("Restaurant orders fetched:", data.orders);
         } catch (error: any) {
           console.error("Error fetching orders:", error);
-          toast.error(error.response?.data?.message || "Failed to fetch orders.");
+          toast.error(
+            error.response?.data?.message || "Failed to fetch orders."
+          );
           set({ restaurantOrders: [] });
         } finally {
           set({ loading: false });
         }
       },
-
       updateOrderStatus: async (orderId, status) => {
         set({ loading: true });
+      
         try {
-          await axios.patch(`${API_END_POINT}/orders/${orderId}`, { status });
+          // ✅ Correct API endpoint
+          await axios.put(`${API_END_POINT}/${orderId}/status`, { status });
+      
           toast.success(`Order status updated to ${status}`);
-          const { data } = await axios.get(`${API_END_POINT}/orders`);
+      
+          // 💡 Optimistic UI update
+          set((state) => ({
+            restaurantOrders: state.restaurantOrders.map((order) =>
+              order._id === orderId ? { ...order, status: status.toLowerCase() } : order
+            ),
+          }));
+      
+          // ✅ Refresh to sync with DB
+          const { data } = await axios.get(`${API_END_POINT}/restaurant/order`);
           set({ restaurantOrders: data.orders });
+      
           console.log(`Order ${orderId} status updated to ${status}`);
         } catch (error: any) {
           console.error("Error updating order status:", error);
@@ -219,7 +232,9 @@ export const useRestaurantStore = create<RestaurantState>()(
           set({ loading: false });
         }
       },
-
+      
+      
+      
       getRestaurantMenus: async (restaurantId: string) => {
         set({ loading: true });
         try {

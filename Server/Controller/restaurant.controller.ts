@@ -162,34 +162,58 @@ export const getRestaurantOrder = async (
   res: Response
 ): Promise<void> => {
   try {
+    console.log("Fetching orders for user:", req.id);
+
     const restaurant = await Restaurant.findOne({ user: req.id });
     if (!restaurant) {
+      console.log("No restaurant found for user:", req.id);
       res.status(404).json({
         success: false,
         message: "Restaurant not found",
       });
       return;
     }
+
+    console.log("Found restaurant:", restaurant._id);
+
     const orders = await Order.find({ restaurant: restaurant._id })
       .populate("restaurant")
       .populate("user");
+
+    console.log("Fetched orders:", orders.length);
+
     res.status(200).json({
       success: true,
       orders,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in getRestaurantOrder:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const updateOrderStatus = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+
+export const updateOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
+
+    const validStatuses = [
+      "pending",
+      "confirmed",
+      "preparing",
+      "outfordelivery",
+      "delivered",
+    ];
+
+    if (!validStatuses.includes(status.toLowerCase())) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid order status",
+      });
+      return;
+    }
+
     const order = await Order.findById(orderId);
     if (!order) {
       res.status(404).json({
@@ -198,18 +222,21 @@ export const updateOrderStatus = async (
       });
       return;
     }
-    order.status = status;
+
+    order.status = status.toLowerCase();
     await order.save();
+
     res.status(200).json({
       success: true,
-      status: order.status,
-      message: "Status updated",
+      order,
+      message: "Order status updated successfully",
     });
   } catch (error) {
-    console.log(error);
+    console.error("❌ Error updating order status:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 export const searchRestaurant = async (
   req: Request,
