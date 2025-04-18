@@ -36,7 +36,7 @@ const RestaurantDetail = () => {
 
   const handleMenuCreated = async () => {
     await fetchRestaurant();
-    toast("Menu created successfully!"); 
+    toast("Menu created successfully!");
     setShowCreateMenu(false);
   };
 
@@ -65,11 +65,11 @@ const RestaurantDetail = () => {
 
   return (
     <motion.div className="max-w-6xl mx-auto my-10">
-      <div className="relative w-full h-32 md:h-64 lg:h-72">
+      <div className="relative w-full h-64">
         <img
           src={singleRestaurant.imageUrl}
           alt={singleRestaurant.restaurantName}
-          className="object-cover w-full h-full rounded-lg shadow-lg"
+          className="object-contain w-full h-full rounded-lg shadow-lg"
           onError={(e) => {
             (e.target as HTMLImageElement).src = "/restaurant-fallback.jpg";
           }}

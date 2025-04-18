@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import HereSection from "./components/HereSection";
+import HereSection from "./components/HeroSection";
 import Profile from "./components/Profile";
 import SearchPage from "./components/SearchPage";
 import RestaurantDetail from "./components/RestaurantDetail";
