@@ -1,8 +1,9 @@
-import { MenuItem, RestaurantState, Restaurant } from "../types/restaurantType";
-import axios from "axios";
-import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import axios from "axios";
+import { toast } from "sonner";
+import { MenuItem, RestaurantState, Restaurant } from "../types/restaurantType";
+import { OrderStatus } from "src/types/orderType";
 
 const API_END_POINT = "http://localhost:8000/api/v1/restaurant";
 axios.defaults.withCredentials = true;
@@ -35,18 +36,13 @@ export const useRestaurantStore = create<RestaurantState>()(
           }
         } catch (error: any) {
           console.error("Error creating restaurant:", error);
-          console.log("Full error object:", error);
-
           if (error.response) {
-            console.log("Server response:", error.response);
             toast.error(error.response.data.message || "Server error");
           } else if (error.request) {
-            console.log("Request error:", error.request);
             toast.error("No response from server");
           } else {
             toast.error("An unexpected error occurred.");
           }
-
           set({ loading: false });
         }
       },
@@ -70,10 +66,6 @@ export const useRestaurantStore = create<RestaurantState>()(
         set({ loading: true });
         try {
           const restaurantId = formData.get("restaurantId") as string;
-          console.log("Full formData:", formData);
-          console.log("Extracted restaurantId:", restaurantId);
-          console.log("Restaurant ID being sent:", restaurantId);
-
           const response = await axios.put(`${API_END_POINT}/${restaurantId}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
@@ -88,16 +80,14 @@ export const useRestaurantStore = create<RestaurantState>()(
               ),
               loading: false,
             }));
-            console.log("Restaurant updated successfully:", response.data.restaurant);
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
           set({ loading: false });
-          console.error("Error updating restaurant:", error);
         }
       },
 
-      searchRestaurant: async (searchText: string, searchQuery: string, selectedCuisines: any) => {
+      searchRestaurant: async (searchText: string, searchQuery: string, selectedCuisines: string[]) => {
         set({ loading: true });
         try {
           const params = new URLSearchParams();
@@ -106,10 +96,8 @@ export const useRestaurantStore = create<RestaurantState>()(
           const response = await axios.get(`${API_END_POINT}/search/${searchText}?${params.toString()}`);
           if (response.data.success) {
             set({ loading: false, searchedRestaurant: response.data });
-            console.log("Restaurant search successful:", response.data);
           }
         } catch (error: any) {
-          console.error("Error searching restaurant:", error);
           toast.error(error.response?.data?.message || "Failed to search restaurants.");
           set({ loading: false });
         }
@@ -174,67 +162,73 @@ export const useRestaurantStore = create<RestaurantState>()(
               loading: false,
             });
             return response.data.restaurant as Restaurant & { menus: MenuItem[] };
-          } else {
-            console.error(
-              "Error fetching restaurant:",
-              response.data.message || "Restaurant not found"
-            );
-            set({ singleRestaurant: null, restaurant: null, loading: false });
-            return null;
           }
+          set({ singleRestaurant: null, restaurant: null, loading: false });
+          return null;
         } catch (error: any) {
-          console.error("Error fetching restaurant:", error);
           set({ singleRestaurant: null, restaurant: null, loading: false });
           return null;
         }
       },
+
       getRestaurantOrders: async () => {
         set({ loading: true });
         try {
           const { data } = await axios.get(`${API_END_POINT}/restaurant/order`);
           set({ restaurantOrders: data.orders });
-          console.log("Restaurant orders fetched:", data.orders);
         } catch (error: any) {
-          console.error("Error fetching orders:", error);
-          toast.error(
-            error.response?.data?.message || "Failed to fetch orders."
-          );
+          toast.error(error.response?.data?.message || "Failed to fetch orders.");
           set({ restaurantOrders: [] });
         } finally {
           set({ loading: false });
         }
       },
-      updateOrderStatus: async (orderId, status) => {
+
+      updateOrderStatus: async (orderId: string, status: OrderStatus) => {
         set({ loading: true });
-      
         try {
-          // ✅ Correct API endpoint
-          await axios.put(`${API_END_POINT}/${orderId}/status`, { status });
+          const url = `${API_END_POINT}/${orderId}/status`;
+          
+          // Get auth token properly (adjust based on your storage)
+          const authToken = localStorage.getItem('authToken') || ''; // or from cookies/state
+          
+          const config = {
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json'
+            }
+          };
+          
+          await axios.put(url, { status }, config);
       
-          toast.success(`Order status updated to ${status}`);
-      
-          // 💡 Optimistic UI update
+          // Optimistic update
           set((state) => ({
             restaurantOrders: state.restaurantOrders.map((order) =>
-              order._id === orderId ? { ...order, status: status.toLowerCase() } : order
+              order._id === orderId ? { ...order, status } : order
             ),
           }));
       
-          // ✅ Refresh to sync with DB
-          const { data } = await axios.get(`${API_END_POINT}/restaurant/order`);
-          set({ restaurantOrders: data.orders });
-      
-          console.log(`Order ${orderId} status updated to ${status}`);
+          toast.success(`Order status updated to ${status}`);
+          
         } catch (error: any) {
-          console.error("Error updating order status:", error);
-          toast.error(error.response?.data?.message || "Failed to update order status.");
+          console.error('Update error:', error);
+          
+          // Revert optimistic update
+          set((state) => ({
+            restaurantOrders: state.restaurantOrders.map((order) =>
+              order._id === orderId ? { ...order, status: order.status } : order
+            ),
+          }));
+          
+          toast.error(
+            error.response?.data?.message || 
+            error.message || 
+            "Failed to update order status."
+          );
         } finally {
           set({ loading: false });
         }
       },
-      
-      
-      
       getRestaurantMenus: async (restaurantId: string) => {
         set({ loading: true });
         try {
@@ -245,7 +239,6 @@ export const useRestaurantStore = create<RestaurantState>()(
           }
           return [];
         } catch (error) {
-          console.error("Error fetching menus:", error);
           set({ loading: false });
           return [];
         }

@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { Restaurant } from "../models/restaurant.model";
 import { Order } from "../models/order.model";
 import Stripe from "stripe";
-import mongoose from "mongoose";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -28,13 +27,18 @@ type CheckoutSessionRequest = {
 const createLineItems = (checkoutSessionRequest: CheckoutSessionRequest, menuItems: any[]) => {
   return checkoutSessionRequest.cartItems.map((item) => {
     const menu = menuItems.find((m: any) => m._id.toString() === item.menuId);
+    const productData: any = {
+      name: menu?.name || "Item",
+    };
+
+    if (menu?.image) {
+      productData.images = [menu.image];
+    }
+
     return {
       price_data: {
         currency: "usd",
-        product_data: {
-          name: menu?.name || "Item",
-          images: [menu?.image || ""],
-        },
+        product_data: productData,
         unit_amount: menu?.price ? Math.round(Number(menu.price) * 100) : 0,
       },
       quantity: Number(item.quantity),
@@ -55,7 +59,6 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
     const menuItems = restaurant.menus;
     const lineItems = createLineItems(checkoutSessionRequest, menuItems);
 
-    // ✅ Calculate total amount (in cents)
     const totalAmount = lineItems.reduce((acc, item) => {
       return acc + (item.price_data.unit_amount || 0) * item.quantity;
     }, 0);
@@ -65,7 +68,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       user: req.id,
       deliveryDetails: checkoutSessionRequest.deliveryDetails,
       cartItems: checkoutSessionRequest.cartItems,
-      totalAmount, // ✅ storing totalAmount
+      totalAmount,
       status: "pending",
     });
 
@@ -80,7 +83,11 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       cancel_url: `${process.env.FRONTEND_URL}/cart`,
       metadata: {
         orderId: order._id.toString(),
-        images: JSON.stringify(menuItems.map((item: any) => item.image)),
+        images: JSON.stringify(
+          menuItems
+            .slice(0, 3)
+            .map((item: any) => item.image?.slice(0, 50))
+        ),
       },
     });
 
@@ -130,10 +137,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const updateOrderStatus = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const updateOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
@@ -146,7 +150,9 @@ export const updateOrderStatus = async (
       "delivered",
     ];
 
-    if (!validStatuses.includes(status.toLowerCase())) {
+    const lowerStatus = status.toLowerCase();
+    
+    if (!validStatuses.includes(lowerStatus)) {
       res.status(400).json({
         success: false,
         message: "Invalid order status",
@@ -154,7 +160,12 @@ export const updateOrderStatus = async (
       return;
     }
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status: lowerStatus },
+      { new: true }
+    );
+
     if (!order) {
       res.status(404).json({
         success: false,
@@ -163,20 +174,19 @@ export const updateOrderStatus = async (
       return;
     }
 
-    order.status = status.toLowerCase();
-    await order.save();
-
     res.status(200).json({
       success: true,
-      order,
+      data: order,
       message: "Order status updated successfully",
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Update order status error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Internal server error" 
+    });
   }
 };
-
 
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
   const sig = req.headers["stripe-signature"]!;

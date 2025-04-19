@@ -48,18 +48,23 @@ export const useOrderStore = create<OrderState>((set) => ({
     try {
       set({ loading: true });
 
-      await axios.put(`${API_END_POINT}/${orderId}/status`, { status });
+      // Convert status to lowercase and assert it as Order["status"]
+      const lowerStatus = status.toLowerCase() as Order["status"];
+      
+      await axios.put(`${API_END_POINT}/order/${orderId}/status`, { 
+        status: lowerStatus 
+      });
 
       toast.success(`Order status updated to ${status}`);
 
+      // Update state with proper typing
       set((state) => ({
+        ...state,  // Include all other state properties
         restaurantOrders: state.restaurantOrders.map((order) =>
-          order._id === orderId ? { ...order, status: status.toLowerCase() as Order["status"] } : order
+          order._id === orderId ? { ...order, status: lowerStatus } : order
         ),
       }));
 
-      const { data } = await axios.get(`${API_END_POINT}/restaurant/order`);
-      set({ restaurantOrders: data.orders });
     } catch (error: any) {
       console.error("Error updating order status:", error);
       toast.error(
