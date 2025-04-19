@@ -37,7 +37,7 @@ const createLineItems = (checkoutSessionRequest: CheckoutSessionRequest, menuIte
 
     return {
       price_data: {
-        currency: "usd",
+        currency: "inr",
         product_data: productData,
         unit_amount: menu?.price ? Math.round(Number(menu.price) * 100) : 0,
       },
@@ -75,7 +75,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       shipping_address_collection: {
-        allowed_countries: ["GB", "US", "CA"],
+        allowed_countries: ["GB", "US", "CA","IN"],
       },
       line_items: lineItems,
       mode: "payment",
